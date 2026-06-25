@@ -28,7 +28,7 @@ export default function SignInPage() {
       if (!res.ok) {
         setError(data.error ?? "Bir hata oluştu.");
       } else {
-        router.push("/account");
+        router.push("/dashboard");
         router.refresh();
       }
     } catch {
