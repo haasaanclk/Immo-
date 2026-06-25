@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOMAINE — Private AI Real Estate Concierge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=EB+Garamond:wght@400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F4F1EA; --ivory-2:#EBE5D8; --forest:#1E3A2F; --forest-deep:#14241C;
+    --brass:#B08D57; --brass-soft:#C9A86A; --ink:#1C1B19; --burgundy:#5E2B2B; --sage:#8A9A86;
+    --serif:'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --body:'EB Garamond', Georgia, serif;
+    --label:'Jost', 'Helvetica Neue', Arial, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--ivory); color:var(--ink); font-family:var(--body); font-size:18px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  .label{font-family:var(--label); text-transform:uppercase; letter-spacing:.28em; font-size:11px; font-weight:400; color:var(--brass)}
+  .serif{font-family:var(--serif)}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px}
+  a{color:inherit; text-decoration:none}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{position:sticky; top:0; z-index:50; background:rgba(244,241,234,.86); backdrop-filter:blur(10px); border-bottom:1px solid rgba(28,27,25,.08)}
+  .topbar .wrap{display:flex; align-items:center; justify-content:space-between; height:72px}
+  .brand{font-family:var(--serif); font-size:26px; letter-spacing:.42em; padding-left:.42em; font-weight:400}
+  .nav{display:flex; gap:34px}
+  .nav a{font-family:var(--label); text-transform:uppercase; letter-spacing:.18em; font-size:11px; color:var(--ink); opacity:.7; transition:opacity .3s}
+  .nav a:hover{opacity:1; color:var(--forest)}
+  .nav .cta{color:var(--forest); opacity:1; border-bottom:1px solid var(--brass); padding-bottom:3px}
+  @media(max-width:760px){.nav{display:none}}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative; padding:120px 0 90px; text-align:center; overflow:hidden}
+  .hero .mono{width:74px; height:74px; border:1px solid var(--brass); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 34px; font-family:var(--serif); font-size:34px; color:var(--forest)}
+  .hero h1{font-family:var(--serif); font-weight:300; font-size:clamp(46px,8vw,104px); line-height:1.02; letter-spacing:.01em; color:var(--forest-deep)}
+  .hero h1 em{font-style:italic; color:var(--brass)}
+  .hero .sub{max-width:640px; margin:30px auto 0; font-size:21px; color:#43423d}
+  .est{margin-top:40px; font-family:var(--label); text-transform:uppercase; letter-spacing:.3em; font-size:10.5px; color:var(--sage)}
+  .rule{width:1px; height:60px; background:linear-gradient(var(--brass),transparent); margin:46px auto 0}
+
+  /* ---------- SECTION ---------- */
+  section{padding:96px 0}
+  .sec-head{text-align:center; max-width:680px; margin:0 auto 64px}
+  .sec-head h2{font-family:var(--serif); font-weight:300; font-size:clamp(34px,5vw,56px); color:var(--forest-deep); line-height:1.08; margin-top:14px}
+  .sec-head p{margin-top:18px; color:#54534c; font-size:19px}
+
+  /* ---------- PHONE FRAME ---------- */
+  .phone{width:300px; height:620px; background:var(--forest-deep); border-radius:42px; padding:11px; box-shadow:0 40px 80px -30px rgba(20,36,28,.55), 0 0 0 1px rgba(176,141,87,.25); flex:0 0 auto}
+  .screen{width:100%; height:100%; background:var(--ivory); border-radius:32px; overflow:hidden; position:relative; display:flex; flex-direction:column}
+  .notch{position:absolute; top:0; left:50%; transform:translateX(-50%); width:120px; height:24px; background:var(--forest-deep); border-radius:0 0 16px 16px; z-index:5}
+  .sb{height:40px; display:flex; align-items:center; justify-content:space-between; padding:0 22px; font-family:var(--label); font-size:11px; letter-spacing:.05em; color:var(--ink); opacity:.65}
+  .sc-body{flex:1; overflow:hidden; padding:6px 20px 20px}
+  .sc-brand{font-family:var(--serif); letter-spacing:.34em; padding-left:.34em; font-size:15px; text-align:center; color:var(--forest); margin-bottom:4px}
+  .sc-divider{height:1px; background:linear-gradient(90deg,transparent,var(--brass),transparent); margin:8px 0 14px}
+
+  /* gallery layout */
+  .gallery{display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start}
+  .phone-col{display:flex; flex-direction:column; align-items:center; gap:18px; width:300px}
+  .phone-cap .label{display:block; text-align:center}
+  .phone-cap h3{font-family:var(--serif); font-weight:400; font-size:23px; text-align:center; color:var(--forest-deep); margin-top:6px}
+  .phone-cap p{text-align:center; font-size:15px; color:#6a6960; margin-top:4px; max-width:280px}
+
+  /* concierge chat */
+  .chat{display:flex; flex-direction:column; gap:10px; height:100%; }
+  .bubble{font-family:var(--body); font-size:14.5px; line-height:1.45; padding:11px 14px; border-radius:16px; max-width:88%}
+  .bubble.ai{background:var(--forest); color:#F1ECE0; border-bottom-left-radius:4px; align-self:flex-start}
+  .bubble.me{background:var(--ivory-2); color:var(--ink); border:1px solid rgba(176,141,87,.3); border-bottom-right-radius:4px; align-self:flex-end}
+  .chips{display:flex; flex-wrap:wrap; gap:7px; margin-top:auto; padding-top:12px}
+  .chip{font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; padding:8px 12px; border:1px solid var(--brass); color:var(--forest); border-radius:30px; cursor:pointer; transition:all .25s; background:transparent}
+  .chip:hover{background:var(--forest); color:var(--ivory); border-color:var(--forest)}
+
+  /* bars */
+  .barrow{margin:14px 0}
+  .barrow .top{display:flex; justify-content:space-between; font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#54534c; margin-bottom:6px}
+  .barrow .top b{color:var(--forest); font-family:var(--serif); font-size:14px; letter-spacing:0; text-transform:none}
+  .track{height:4px; background:var(--ivory-2); border-radius:4px; overflow:hidden}
+  .fill{height:100%; background:linear-gradient(90deg,var(--brass),var(--forest)); border-radius:4px}
+
+  .pill{display:inline-block; font-family:var(--label); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--brass); border:1px solid var(--brass); border-radius:30px; padding:6px 12px}
+
+  /* DNA report rows */
+  .dna{display:grid; grid-template-columns:1fr auto; gap:11px 8px; margin-top:6px}
+  .dna .k{font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#54534c; align-self:center}
+  .dna .v{font-family:var(--serif); font-size:19px; color:var(--forest); text-align:right; font-weight:500}
+
+  /* listing card inside phone */
+  .lcard{border:1px solid rgba(176,141,87,.3); border-radius:16px; overflow:hidden; background:#fff}
+  .lcard .img{height:120px; background:linear-gradient(135deg,#2c4a3c,#1E3A2F 60%,#14241C); position:relative}
+  .lcard .img .tag{position:absolute; top:10px; left:10px}
+  .lcard .meta{padding:13px 14px}
+  .lcard h4{font-family:var(--serif); font-weight:500; font-size:19px; color:var(--forest-deep)}
+  .lcard .why{font-size:13.5px; color:#5b5a52; margin-top:6px; line-height:1.4}
+  .lcard .match{font-family:var(--serif); font-size:15px; color:var(--brass); margin-top:8px}
+
+  /* privacy circle */
+  .gauge{width:150px; height:150px; margin:8px auto; position:relative}
+  .gauge svg{transform:rotate(-90deg)}
+  .gauge .num{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center}
+  .gauge .num b{font-family:var(--serif); font-size:38px; color:var(--forest); font-weight:500; line-height:1}
+  .gauge .num span{font-family:var(--label); font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--sage); margin-top:4px}
+
+  .silent{display:flex; justify-content:space-around; text-align:center; margin-top:14px}
+  .silent .s b{font-family:var(--serif); font-size:30px; color:var(--forest)}
+  .silent .s span{display:block; font-family:var(--label); font-size:9.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--sage); margin-top:2px}
+
+  .lock{text-align:center; margin-top:30px}
+  .lock .ic{width:54px; height:54px; border:1px solid var(--brass); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:var(--brass); font-size:22px}
+
+  /* ---------- TIERS ---------- */
+  .tiers{background:var(--forest-deep); color:#EDE7DA}
+  .tiers .sec-head h2{color:#F1ECE0}
+  .tiers .sec-head p{color:#a9b3a6}
+  .tier-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px}
+  @media(max-width:860px){.tier-grid{grid-template-columns:1fr}}
+  .tier{border:1px solid rgba(176,141,87,.28); border-radius:8px; padding:34px 30px; background:rgba(255,255,255,.02)}
+  .tier.feature{background:linear-gradient(180deg,rgba(176,141,87,.1),rgba(176,141,87,.02)); border-color:var(--brass)}
+  .tier .nm{font-family:var(--serif); font-size:30px; font-weight:400; color:#F1ECE0; letter-spacing:.06em}
+  .tier .for{font-family:var(--label); font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--brass); margin:6px 0 22px}
+  .tier ul{list-style:none}
+  .tier li{padding:9px 0; border-top:1px solid rgba(255,255,255,.07); font-size:16px; color:#d8d2c5; display:flex; gap:10px}
+  .tier li::before{content:"—"; color:var(--brass)}
+  .tier .price{margin-top:22px; font-family:var(--label); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#9aa496}
+
+  /* ---------- FEATURE STRIP ---------- */
+  .features{display:grid; grid-template-columns:repeat(3,1fr); gap:2px; background:rgba(28,27,25,.08); border:1px solid rgba(28,27,25,.08)}
+  @media(max-width:820px){.features{grid-template-columns:1fr}}
+  .feat{background:var(--ivory); padding:42px 34px}
+  .feat .n{font-family:var(--serif); font-size:15px; color:var(--brass)}
+  .feat h3{font-family:var(--serif); font-weight:400; font-size:27px; color:var(--forest-deep); margin:10px 0 12px; line-height:1.15}
+  .feat p{font-size:16.5px; color:#5b5a52}
+
+  /* ---------- PALETTE ---------- */
+  .swatches{display:flex; gap:0; border-radius:8px; overflow:hidden; border:1px solid rgba(28,27,25,.1)}
+  .sw{flex:1; height:130px; display:flex; align-items:flex-end; padding:12px; font-family:var(--label); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase}
+  @media(max-width:820px){.swatches{flex-wrap:wrap}.sw{flex:1 0 33%}}
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--forest-deep); color:#cfc9bb; padding:80px 0 50px; text-align:center}
+  footer .brand{color:#F1ECE0; font-size:30px}
+  footer .tag{font-family:var(--serif); font-style:italic; font-size:22px; color:var(--brass-soft); margin:22px 0 30px}
+  footer .est{color:#8a9384}
+  .quietnote{font-size:14px; color:#7e887a; margin-top:30px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar"><div class="wrap">
+  <div class="brand">DOMAINE</div>
+  <nav class="nav">
+    <a href="#concierge">Concierge</a>
+    <a href="#intelligence">Intelligence</a>
+    <a href="#private">Private Market</a>
+    <a href="#tiers">Membership</a>
+    <a href="#tiers" class="cta">Request Invitation</a>
+  </nav>
+</div></div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="mono serif">D</div>
+    <div class="label">Private AI Real Estate Concierge</div>
+    <h1 style="margin-top:18px">Ev aramazsınız.<br><em>Size ait olanı</em> keşfedersiniz.</h1>
+    <p class="sub">Bir ilan sitesi değil. Zamanınızı koruyan, mahremiyetinizi gözeten ve yalnızca size ait olanı gösteren kişisel bir gayrimenkul zekâ asistanı.</p>
+    <div class="est">Est. 2026 · München · Zürich · Wien · Dubai · London</div>
+    <div class="rule"></div>
+  </div>
+</header>
+
+<!-- CONCIERGE -->
+<section id="concierge">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="label">01 — Zamanımı kurtar</div>
+      <h2>AI Property Concierge</h2>
+      <p>5.000 ilan gezmezsiniz. Yapay zekâ filtre sormaz — yaşam tarzınızı anlar ve sizin yerinize çalışır.</p>
+    </div>
+    <div class="gallery">
+
+      <!-- Phone 1: live concierge -->
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>9:41</span><span>DOMAINE</span></div>
+          <div class="sc-body">
+            <div class="sc-brand">CONCIERGE</div>
+            <div class="sc-divider"></div>
+            <div class="chat" id="chat">
+              <div class="bubble ai">İyi akşamlar. Size uygun evi bulabilmem için yaşam tarzınızı anlamam gerekiyor — yalnızca beş soru.</div>
+              <div class="bubble ai" id="q">Sabah kahvenizi nerede içmeyi seversiniz?</div>
+              <div class="chips" id="chips">
+                <button class="chip" onclick="answer('Sessiz bir bahçede')">Sessiz bahçe</button>
+                <button class="chip" onclick="answer('Şehrin merkezinde')">Şehir merkezi</button>
+                <button class="chip" onclick="answer('Manzaraya karşı')">Manzaraya karşı</button>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="phone-cap">
+          <span class="label">Adım 1</span>
+          <h3>Yaşam görüşmesi</h3>
+          <p>Tıklayın — AI'nin profilinizi nasıl çıkardığını görün.</p>
+        </div>
+      </div>
+
+      <!-- Phone 2: lifestyle profile -->
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>9:43</span><span>DOMAINE</span></div>
+          <div class="sc-body">
+            <div class="sc-brand">PROFILE</div>
+            <div class="sc-divider"></div>
+            <div style="text-align:center; margin-bottom:6px">
+              <div class="serif" style="font-size:24px; color:var(--forest-deep)">Hasan</div>
+              <span class="pill" style="margin-top:8px">Lifestyle · Executive</span>
+            </div>
+            <div class="barrow"><div class="top"><span>Modern şehir yaşamı</span><b>87%</b></div><div class="track"><div class="fill" style="width:87%"></div></div></div>
+            <div class="barrow"><div class="top"><span>Sessiz yaşam</span><b>74%</b></div><div class="track"><div class="fill" style="width:74%"></div></div></div>
+            <div class="barrow"><div class="top"><span>Yatırım odaklı</span><b>91%</b></div><div class="track"><div class="fill" style="width:91%"></div></div></div>
+            <div class="barrow"><div class="top"><span>Mahremiyet ihtiyacı</span><b>95%</b></div><div class="track"><div class="fill" style="width:95%"></div></div></div>
+            <div class="sc-divider" style="margin-top:18px"></div>
+            <div class="label" style="text-align:center; color:#54534c">Öncelik sırası</div>
+            <div style="text-align:center; font-family:var(--serif); font-size:16px; color:var(--forest); margin-top:8px; line-height:1.7">
+              Mahremiyet · Mimari kalite<br>Yatırım · Ulaşım
+            </div>
+          </div>
+        </div></div>
+        <div class="phone-cap">
+          <span class="label">Adım 2</span>
+          <h3>Lifestyle Profile</h3>
+          <p>Filtre değil, bir karakter. Evler buna göre sıralanır.</p>
+        </div>
+      </div>
+
+      <!-- Phone 3: curated match -->
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>9:44</span><span>DOMAINE</span></div>
+          <div class="sc-body">
+            <div class="sc-brand">FOR YOU</div>
+            <div class="sc-divider"></div>
+            <div class="label" style="margin-bottom:10px">Size özel · 3 mülk</div>
+            <div class="lcard">
+              <div class="img"><span class="tag pill" style="color:var(--brass-soft); border-color:var(--brass-soft)">Off-market</span></div>
+              <div class="meta">
+                <h4>Villa Solitude</h4>
+                <div class="why">+ Deniz manzarası &nbsp; + Düşük gürültü<br>+ Bölge gelişiyor &nbsp; + Mimari uyum</div>
+                <div class="match">Yaşam uyumu — 97%</div>
+              </div>
+            </div>
+            <div style="margin-top:14px; display:flex; gap:10px; align-items:center">
+              <div style="flex:1; height:1px; background:var(--ivory-2)"></div>
+              <span class="label" style="color:var(--sage)">Sıradaki</span>
+              <div style="flex:1; height:1px; background:var(--ivory-2)"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:12px; font-family:var(--serif); color:var(--forest)">
+              <span>Penthouse Noir</span><span style="color:var(--brass)">93%</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:8px; font-family:var(--serif); color:var(--forest)">
+              <span>Residence Eaux</span><span style="color:var(--brass)">90%</span>
+            </div>
+          </div>
+        </div></div>
+        <div class="phone-cap">
+          <span class="label">Adım 3</span>
+          <h3>Yaşam senaryosu</h3>
+          <p>Her öneride "Neden?" gerekçesiyle. Ev değil, hayat.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- INTELLIGENCE -->
+<section id="intelligence" style="background:var(--ivory-2)">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="label">02 — Prestiji ve kaliteyi kanıtla</div>
+      <h2>Property Intelligence</h2>
+      <p>Banka ekstresi sadeliğinde raporlar. Sayfayı doldurmak için değil — karar vermek için.</p>
+    </div>
+    <div class="gallery">
+
+      <!-- DNA -->
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>10:02</span><span>DOMAINE</span></div>
+          <div class="sc-body">
+            <div class="sc-brand">PROPERTY DNA</div>
+            <div class="sc-divider"></div>
+            <div style="text-align:center"><div class="serif" style="font-size:21px; color:var(--forest-deep)">Villa Solitude</div><div class="label" style="color:var(--sage); margin-top:4px">Zürichberg</div></div>
+            <div class="sc-divider" style="margin-top:14px"></div>
+            <div class="dna">
+              <div class="k">Mimari kalite</div><div class="v">9.2</div>
+              <div class="k">Malzeme</div><div class="v">8.8</div>
+              <div class="k">Lokasyon</div><div class="v">9.5</div>
+              <div class="k">Mahremiyet</div><div class="v">9.7</div>
+              <div class="k">Enerji</div><div class="v">A+</div>
+              <div class="k">Yatırım potansiyeli</div><div class="v">8.9</div>
+            </div>
+            <div class="sc-divider" style="margin-top:18px"></div>
+            <div style="text-align:center"><span class="pill">Prestige Score · 94</span></div>
+          </div>
+        </div></div>
+        <div class="phone-cap"><span class="label">DNA Report</span><h3>Ev DNA</h3><p>Mimari, malzeme, lokasyon, prestij — tek sayfada.</p></div>
+      </div>
+
+      <!-- Privacy -->
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>10:03</span><span>DOMAINE</span></div>
+          <div class="sc-body">
+            <div class="sc-brand">PRIVACY</div>
+            <div class="sc-divider"></div>
+            <div class="label" style="text-align:center; color:#54534c">Mahremiyet analizi</div>
+            <div class="gauge">
+              <svg width="150" height="150">
+                <circle cx="75" cy="75" r="66" fill="none" stroke="#EBE5D8" stroke-width="6"/>
+                <circle cx="75" cy="75" r="66" fill="none" stroke="#B08D57" stroke-width="6" stroke-linecap="round" stroke-dasharray="414" stroke-dashoffset="25"/>
+              </svg>
+              <div class="num"><b>9.4</b><span>/ 10</span></div>
+            </div>
+            <div style="text-align:center"><span class="pill" style="color:var(--forest); border-color:var(--forest)">Görünmez yaşam</span></div>
+            <div class="sc-divider" style="margin-top:18px"></div>
+            <div class="barrow"><div class="top"><span>Komşu mesafesi</span><b>96</b></div><div class="track"><div class="fill" style="width:96%"></div></div></div>
+            <div class="barrow"><div class="top"><span>Görünürlük (drone)</span><b>92</b></div><div class="track"><div class="fill" style="width:92%"></div></div></div>
+            <div class="barrow"><div class="top"><span>Giriş güvenliği</span><b>98</b></div><div class="track"><div class="fill" style="width:98%"></div></div></div>
+          </div>
+        </div></div>
+        <div class="phone-cap"><span class="label">Privacy</span><h3>Mahremiyet</h3><p>Komşu mesafesi, görünürlük, drone taraması, giriş güvenliği.</p></div>
+      </div>
+
+      <!-- Silence + checkup -->
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>10:05</span><span>DOMAINE</span></div>
+          <div class="sc-body">
+            <div class="sc-brand">SILENCE MAP</div>
+            <div class="sc-divider"></div>
+            <div style="text-align:center"><span class="pill" style="color:var(--forest); border-color:var(--forest)">Ultra sessiz bölge</span></div>
+            <div class="silent">
+              <div class="s"><b>32<small style="font-size:14px"> dB</small></b><span>Gündüz</span></div>
+              <div class="s"><b>24<small style="font-size:14px"> dB</small></b><span>Gece</span></div>
+            </div>
+            <div class="sc-divider" style="margin-top:20px"></div>
+            <div class="label" style="margin:6px 0 12px; color:#54534c">Home Checkup</div>
+            <div class="dna">
+              <div class="k">Elektrik</div><div class="v">A</div>
+              <div class="k">Çatı</div><div class="v">B+</div>
+              <div class="k">Nem</div><div class="v">A</div>
+              <div class="k">Enerji</div><div class="v">A+</div>
+            </div>
+            <div class="sc-divider" style="margin-top:16px"></div>
+            <div style="font-size:13.5px; color:#5b5a52; text-align:center; font-style:italic" class="serif">"İnsan check-up olur. Ev de olmalı."</div>
+          </div>
+        </div></div>
+        <div class="phone-cap"><span class="label">Silence · Health</span><h3>Sessizlik & Sağlık</h3><p>Ses haritası ve evin tam check-up raporu.</p></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PRIVATE MARKET -->
+<section id="private">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="label">03 — Mahremiyetimi koru</div>
+      <h2>The Private Market</h2>
+      <p>Yüksek gelir grubunda mahremiyet bir değerdir. Herkese açık ilan yok — yalnızca onaylı alıcılar.</p>
+    </div>
+    <div class="gallery">
+
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>11:20</span><span>DOMAINE</span></div>
+          <div class="sc-body" style="background:var(--forest-deep)">
+            <div class="sc-brand" style="color:var(--brass-soft)">PRIVATE PREVIEW</div>
+            <div class="sc-divider"></div>
+            <div class="lock">
+              <div class="ic" style="color:var(--brass-soft); border-color:var(--brass-soft)">⌧</div>
+              <div class="serif" style="color:#F1ECE0; font-size:22px; line-height:1.3">Bu mülk henüz<br>halka açılmadı.</div>
+              <p style="color:#a9b3a6; font-size:14px; margin-top:14px">Sadece <b style="color:var(--brass-soft)">12 seçilmiş alıcıya</b> gösteriliyor.</p>
+            </div>
+            <div class="sc-divider" style="margin-top:26px; background:linear-gradient(90deg,transparent,var(--brass-soft),transparent)"></div>
+            <div style="text-align:center; margin-top:8px">
+              <span class="label" style="color:var(--brass-soft)">VIP First Access</span>
+              <div class="serif" style="color:#EDE7DA; font-size:18px; margin-top:8px">Halktan 48 saat önce.</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="phone-cap"><span class="label">First Access</span><h3>Gizli portföy</h3><p>Onaylı alıcılar, gizli teklif, 48 saat erken erişim.</p></div>
+      </div>
+
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>11:22</span><span>DOMAINE</span></div>
+          <div class="sc-body">
+            <div class="sc-brand">INVISIBLE BUYER</div>
+            <div class="sc-divider"></div>
+            <div style="text-align:center; margin:6px 0 14px">
+              <div class="ic" style="width:54px;height:54px;border:1px solid var(--brass);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--brass);font-size:22px">◍</div>
+              <div class="serif" style="font-size:20px; color:var(--forest-deep)">Kimliğiniz gizli.</div>
+              <p style="font-size:14px; color:#6a6960; margin-top:8px">Satıcı sizi göremez.<br>Yalnızca finansal yeterliliğiniz doğrulanır.</p>
+            </div>
+            <div class="lcard" style="border-style:dashed">
+              <div class="meta">
+                <span class="label" style="color:var(--sage)">Doğrulanmış alıcı</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px">
+                  <span class="serif" style="font-size:17px; color:var(--forest)">Yeterlilik</span>
+                  <span class="pill" style="color:var(--forest); border-color:var(--forest)">✓ Onaylı</span>
+                </div>
+                <div class="why" style="margin-top:10px">Kimlik · gizli &nbsp;|&nbsp; Bütçe · doğrulandı</div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="phone-cap"><span class="label">Anonymity</span><h3>Görünmez alıcı</h3><p>"İstediğim ev" bilgisi yayılmaz. Sadece yeterlilik görünür.</p></div>
+      </div>
+
+      <div class="phone-col">
+        <div class="phone"><div class="screen"><div class="notch"></div>
+          <div class="sb"><span>11:25</span><span>DOMAINE</span></div>
+          <div class="sc-body">
+            <div class="sc-brand">NEGOTIATION SHIELD</div>
+            <div class="sc-divider"></div>
+            <div class="bubble ai" style="max-width:100%">Sizin adınıza stratejik bir teklif hazırlıyorum.</div>
+            <div class="label" style="margin:18px 0 10px; color:#54534c">AI analizi</div>
+            <div class="dna">
+              <div class="k">Satıcı motivasyonu</div><div class="v" style="font-size:15px">Yüksek</div>
+              <div class="k">Piyasada kalma</div><div class="v" style="font-size:15px">128 gün</div>
+              <div class="k">Benzer satışlar</div><div class="v" style="font-size:15px">−6%</div>
+              <div class="k">Önerilen teklif</div><div class="v">−8.5%</div>
+            </div>
+            <div class="sc-divider" style="margin-top:18px"></div>
+            <div class="label" style="color:#54534c; margin-bottom:8px">Private Viewing · Cumartesi</div>
+            <div style="font-family:var(--serif); color:var(--forest); font-size:15px; line-height:1.8">
+              10:00 — Villa Solitude<br>12:00 — Penthouse Noir<br>15:00 — Residence Eaux
+            </div>
+          </div>
+        </div></div>
+        <div class="phone-cap"><span class="label">Strategy</span><h3>Negotiation Shield</h3><p>AI stratejik teklif kurar, gösterim rotanızı planlar.</p></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE STRIP -->
+<section style="padding-bottom:40px">
+  <div class="wrap">
+    <div class="features">
+      <div class="feat"><div class="n">i.</div><h3>AI Interior Designer</h3><p>3D ev içinde: "Bu evi Japandi'ye çevir." Mobilya, ışık, renk — ve maliyeti: ~80.000 €, ev değerine +%3.</p></div>
+      <div class="feat"><div class="n">ii.</div><h3>Akıllı Finans</h3><p>"Bu ev bütçenize uygun mu?" Kredi, aylık yük, bakım ve enerji gideri — tek bakışta.</p></div>
+      <div class="feat"><div class="n">iii.</div><h3>Dijital Ev Pasaportu</h3><p>Her mülkün doğrulanmış, taşınabilir kimliği: DNA, geçmiş, mahremiyet ve sağlık tek belgede.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TIERS -->
+<section id="tiers" class="tiers">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="label" style="color:var(--brass-soft)">Membership</div>
+      <h2>Tek uygulama, üç kapı</h2>
+      <p>Orta kesim güven ve doğru karar satın alır. Zengin segment zaman, mahremiyet ve özel erişim satın alır. Aynı motor — iki ayrı vaat.</p>
+    </div>
+    <div class="tier-grid">
+      <div class="tier">
+        <div class="nm">Résident</div>
+        <div class="for">Orta kesim · İlk alıcı</div>
+        <ul>
+          <li>AI Concierge (temel)</li>
+          <li>Lifestyle eşleşme</li>
+          <li>Akıllı Finans modülü</li>
+          <li>Ev Sağlık Raporu</li>
+        </ul>
+        <div class="price">Ücretsiz / düşük abonelik</div>
+      </div>
+      <div class="tier feature">
+        <div class="nm">Privé</div>
+        <div class="for">Yoğun profesyonel · Üst-orta</div>
+        <ul>
+          <li>Private Market erişimi</li>
+          <li>Property DNA raporları</li>
+          <li>Mahremiyet & Sessizlik analizi</li>
+          <li>First Access — 48 saat önce</li>
+        </ul>
+        <div class="price">Aylık premium abonelik</div>
+      </div>
+      <div class="tier">
+        <div class="nm">Cercle Noir</div>
+        <div class="for">UHNW · Yatırımcı · Yönetici</div>
+        <ul>
+          <li>Gizli portföy · özel gösterim</li>
+          <li>Invisible Buyer modu</li>
+          <li>AI Negotiation Shield</li>
+          <li>İnsan + AI kişisel concierge</li>
+        </ul>
+        <div class="price">Davetiye + yıllık üyelik</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PALETTE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="label">Design Language</div>
+      <h2>Old money fısıldar</h2>
+      <p>New money parlar. Lüks, altının azlığındadır — boşlukta, sessiz renklerde ve serif tipografinin köklü duruşunda.</p>
+    </div>
+    <div class="swatches">
+      <div class="sw" style="background:#F4F1EA; color:#54534c">Ivory</div>
+      <div class="sw" style="background:#EBE5D8; color:#54534c">Parchment</div>
+      <div class="sw" style="background:#1E3A2F; color:#EDE7DA">Forest</div>
+      <div class="sw" style="background:#14241C; color:#EDE7DA">Forest Deep</div>
+      <div class="sw" style="background:#B08D57; color:#1C1B19">Brass</div>
+      <div class="sw" style="background:#5E2B2B; color:#EDE7DA">Burgundy</div>
+    </div>
+    <div style="text-align:center; margin-top:40px; font-family:var(--serif); font-size:23px; color:var(--forest)">
+      <em>Cormorant Garamond</em> &nbsp;·&nbsp; EB Garamond &nbsp;·&nbsp; <span class="label" style="font-size:13px; color:var(--ink)">JOST</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="brand serif">DOMAINE</div>
+    <div class="tag">Your Time. Your Privacy. Your Property.</div>
+    <div class="est label">Est. 2026 · München · Zürich · Wien · Dubai · London</div>
+    <div class="quietnote">Bir ilan sitesi değil — kişiye özel gayrimenkul karar sistemi. · Konsept prototipi.</div>
+  </div>
+</footer>
+
+<script>
+  // ---- Concierge demo flow ----
+  const flow = [
+    { q:"Evde misafir ağırlıyor musunuz?", chips:[["Sık sık","Sık misafir"],["Nadiren","Mahrem yaşam"],["Sadece yakın çevre","Seçili çevre"]] },
+    { q:"Şehrin sesi sizi rahatsız eder mi?", chips:[["Çok, sessizlik şart","Sessizlik"],["Biraz","Dengeli"],["Hayır, canlılık severim","Merkez"]] },
+    { q:"Tasarım tarzınız?", chips:[["Minimal","Minimal"],["Klasik","Klasik"],["Japandi / sıcak","Japandi"]] },
+    { q:"Bu ev sizin için yaşam mı, yatırım mı?", chips:[["Çoğunlukla yaşam","Yaşam"],["İkisi de","Denge"],["Yatırım önceliğim","Yatırım"]] }
+  ];
+  let step = 0;
+  const chat = document.getElementById('chat');
+  const chips = document.getElementById('chips');
+  const qEl = document.getElementById('q');
+
+  function scroll(){ chat.scrollTop = chat.scrollHeight; }
+
+  function answer(text){
+    // user bubble
+    const me = document.createElement('div');
+    me.className = 'bubble me'; me.textContent = text;
+    chat.insertBefore(me, chips);
+    scroll();
+
+    if(step < flow.length){
+      const f = flow[step++];
+      setTimeout(()=>{
+        const ai = document.createElement('div');
+        ai.className = 'bubble ai'; ai.textContent = f.q;
+        chat.insertBefore(ai, chips);
+        chips.innerHTML = '';
+        f.chips.forEach(c=>{
+          const b = document.createElement('button');
+          b.className='chip'; b.textContent=c[1];
+          b.onclick=()=>answer(c[0]);
+          chips.appendChild(b);
+        });
+        scroll();
+      }, 380);
+    } else {
+      // finish -> show profile result
+      setTimeout(()=>{
+        const ai = document.createElement('div');
+        ai.className='bubble ai';
+        ai.innerHTML = "Teşekkürler. Profiliniz hazır: <b>Executive · Mahremiyet öncelikli.</b> 3 mülk %90+ uyumla eşleşti — yandaki ekranda.";
+        chat.insertBefore(ai, chips);
+        chips.innerHTML = '<span class="label" style="color:var(--sage)">Profil tamamlandı →</span>';
+        scroll();
+      }, 380);
+    }
+  }
+</script>
+</body>
+</html>
