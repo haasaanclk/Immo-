@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ivory text-ink font-body antialiased;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+}
+
+@layer components {
+  .label-eyebrow {
+    @apply font-label uppercase text-[11px] text-brass;
+    letter-spacing: 0.28em;
+  }
+  .hair-rule {
+    background: linear-gradient(90deg, transparent, #B08D57, transparent);
+    height: 1px;
+  }
+  .gold-track {
+    background: linear-gradient(90deg, #B08D57, #1E3A2F);
+  }
+  .pill {
+    @apply inline-block font-label uppercase text-[10px] text-brass border border-brass rounded-full px-3 py-1.5;
+    letter-spacing: 0.18em;
+  }
+}

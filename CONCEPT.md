@@ -176,7 +176,11 @@ Bunu yapan bir ilan sitesi değil — **kişiye özel gayrimenkul karar sistemi*
 
 ---
 
-## 8. Prototip
-`prototype/index.html` — tarayıcıda açın. "Old money" görsel dili, AI Concierge akışı,
-Lifestyle Profile, Property DNA, Mahremiyet/Sessizlik analizi ve Private Collection
-ekranlarını içeren tıklanabilir konsept.
+## 8. Uygulama & Prototip
+- **Çalışan uygulama (Next.js 14 + TS + Tailwind):** `npm install && npm run dev`. Tasarım
+  sistemi gerçek, yeniden kullanılabilir bileşenlere dönüştürüldü — token'lar `tailwind.config.ts`'te,
+  veri `data/properties.ts`'te, ekranlar `components/screens/`'te. Mülk görselleri ve iç mekânlar
+  `components/art/EstateArt.tsx` içinde **kendi kendine yeten SVG** olarak üretilir (harici fotoğraf
+  veya ağ gerekmez). **AI Interior Designer** canlı tarz değiştiricidir (Japandi / Old Money / Minimal)
+  ve her tarzda maliyet + değer etkisini gösterir.
+- **Hızlı statik önizleme:** `prototype/index.html` — kurulum gerektirmez, tarayıcıda açın.
