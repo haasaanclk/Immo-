@@ -8,6 +8,7 @@ import { rankForProfile } from "@/lib/matching";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { EstateFacade } from "@/components/art/EstateArt";
 import { Pill } from "@/components/ui/primitives";
+import { TheVerdict } from "@/components/dashboard/TheVerdict";
 
 export const dynamic = "force-dynamic";
 
@@ -117,6 +118,11 @@ export default async function DashboardPage() {
                 locked={m.property.offMarket && !member}
               />
             ))}
+          </div>
+
+          {/* AI verdict — which to see first */}
+          <div className="mt-10">
+            <TheVerdict />
           </div>
         </section>
 

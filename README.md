@@ -29,6 +29,8 @@ npm run build && npm run start
 - **Sizin için seçildi** — `lib/matching.ts` profilinizi canlı DB portföyüne karşı puanlar
   (öncelik + eksen ağırlıkları → 0-100 uyum), kişisel gerekçelerle sıralar
 - **Koleksiyonunuz** — kaydettiğiniz mülkler (`saved_properties`)
+- **DOMAINE'in Kararı** — Claude, en iyi eşleşmelerinizi profilinize karşı karşılaştırıp
+  *önce hangisini görmeniz gerektiğine* dair akan, kararlı bir tavsiye verir (`/api/verdict`)
 
 Kaydetme (`✧/✦`) hem portföy kartlarında hem mülk detayında çalışır (`/api/saved`).
 
