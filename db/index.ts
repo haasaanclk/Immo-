@@ -42,6 +42,8 @@ async function init() {
       name TEXT NOT NULL,
       district TEXT NOT NULL,
       city TEXT NOT NULL,
+      kind TEXT NOT NULL DEFAULT 'Residence',
+      year INTEGER NOT NULL DEFAULT 2020,
       match INTEGER NOT NULL,
       prestige_score INTEGER NOT NULL,
       off_market INTEGER NOT NULL,
@@ -61,10 +63,18 @@ async function init() {
     );
   `);
 
-  // Migration for pre-existing DBs missing the profile column.
-  const cols = await client.execute("PRAGMA table_info(users)");
-  if (!cols.rows.some((r) => (r as unknown as { name: string }).name === "lifestyle_profile")) {
+  // Migrations for pre-existing DBs missing newer columns.
+  const userCols = await client.execute("PRAGMA table_info(users)");
+  if (!userCols.rows.some((r) => (r as unknown as { name: string }).name === "lifestyle_profile")) {
     await client.execute("ALTER TABLE users ADD COLUMN lifestyle_profile TEXT");
+  }
+  const propCols = await client.execute("PRAGMA table_info(properties)");
+  const propNames = propCols.rows.map((r) => (r as unknown as { name: string }).name);
+  if (!propNames.includes("kind")) {
+    await client.execute("ALTER TABLE properties ADD COLUMN kind TEXT NOT NULL DEFAULT 'Residence'");
+  }
+  if (!propNames.includes("year")) {
+    await client.execute("ALTER TABLE properties ADD COLUMN year INTEGER NOT NULL DEFAULT 2020");
   }
 
   // Seed the catalog once.
@@ -76,6 +86,8 @@ async function init() {
         name: p.name,
         district: p.district,
         city: p.city,
+        kind: p.kind,
+        year: p.year,
         match: p.match,
         prestigeScore: p.prestigeScore,
         offMarket: p.offMarket,

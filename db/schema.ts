@@ -30,6 +30,8 @@ export const properties = sqliteTable("properties", {
   name: text("name").notNull(),
   district: text("district").notNull(),
   city: text("city").notNull(),
+  kind: text("kind").notNull().default("Residence"),
+  year: integer("year").notNull().default(2020),
   match: integer("match").notNull(),
   prestigeScore: integer("prestige_score").notNull(),
   offMarket: integer("off_market", { mode: "boolean" }).notNull(),
