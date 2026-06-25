@@ -34,6 +34,11 @@ npm run build && npm run start
 
 Kaydetme (`✧/✦`) hem portföy kartlarında hem mülk detayında çalışır (`/api/saved`).
 
+## ⭐ Dijital Ev Pasaportu — "prestij ve kaliteyi kanıtla"
+Her mülk için tek, doğrulanmış, **yazdırılabilir** belge (`/property/[id]/passport`):
+Kalite Endeksi, Property DNA, mahremiyet & sessizlik, ev sağlık raporu, finansal özet,
+seri-no + mühür. Print-friendly (Yazdır → PDF). Off-market pasaportlar Privé+ ile açılır.
+
 ## ⭐ Özel Gösterim & Invisible Buyer — "mahremiyetini koru"
 Mülk sayfasından gerçek bir **özel gösterim / gizli ilgi** talebi: kimlik gizli kalır
 (`anonymous`), satıcıya yalnızca **maskelenmiş finansal yeterlilik** iletilir. Tarih/saat,

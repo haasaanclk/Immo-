@@ -179,6 +179,12 @@ export function PropertyDetail({
         <div className="mt-4 flex flex-wrap gap-4">
           <SaveButton propertyId={p.id} initialSaved={saved} signedIn={signedIn} />
           <Link
+            href={`/property/${p.id}/passport`}
+            className="rounded-sm border border-brass px-6 py-3 font-label text-[11px] uppercase tracking-[0.2em] text-forest transition-colors hover:bg-brass hover:text-forest-deep"
+          >
+            Dijital Ev Pasaportu →
+          </Link>
+          <Link
             href="/collection"
             className="rounded-sm border border-ink/20 px-6 py-3 font-label text-[11px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-forest hover:text-forest"
           >
