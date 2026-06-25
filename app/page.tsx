@@ -1,4 +1,7 @@
-import { TopBar, Hero, Footer } from "@/components/sections/Chrome";
+import { Hero, Footer } from "@/components/sections/Chrome";
+import { TopBar } from "@/components/sections/TopBar";
+import { getCurrentUser } from "@/lib/current-user";
+import { tierInfo } from "@/lib/membership";
 import { Tiers, Palette, FeatureStrip } from "@/components/sections/Tiers";
 import { SectionHead } from "@/components/ui/primitives";
 import { Gallery, GalleryItem } from "@/components/ui/Gallery";
@@ -17,10 +20,12 @@ import {
 } from "@/components/screens/PrivateScreens";
 import { InteriorDesigner } from "@/components/screens/InteriorDesigner";
 
-export default function Home() {
+export default async function Home() {
+  const user = await getCurrentUser();
+  const navUser = user ? { name: user.name, tier: tierInfo(user.tier).name } : null;
   return (
     <main>
-      <TopBar />
+      <TopBar user={navUser} />
       <Hero />
 
       {/* 01 — CONCIERGE */}
