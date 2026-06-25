@@ -59,13 +59,15 @@ npm run dev
 ## Veritabanı · Üyelik · Ödeme
 | Katman | Teknoloji | Davranış |
 |---|---|---|
-| **Veritabanı** | Drizzle ORM + SQLite (`better-sqlite3`) | İlk çalışmada otomatik tablo + portföy seed'i. **Postgres'e hazır** — `db/schema.ts` / `db/index.ts` notlarıyla dialect değişimi. |
+| **Veritabanı** | Drizzle ORM + **libSQL** | İlk çalışmada otomatik tablo + portföy seed'i. Yerelde dosya (`file:`), üretimde **Turso** bulut (`libsql://`) — **Vercel'e hazır** (bkz. [DEPLOY.md](DEPLOY.md)). |
 | **Kimlik** | bcrypt + JWT (`jose`) httpOnly cookie | Kayıt / giriş / çıkış. Tier her zaman DB'den okunur (stale cookie yok). |
 | **Üyelik** | `lib/membership.ts` | Résident / Privé / Cercle Noir. Off-market mülkler Privé+ gerektirir. |
 | **Ödeme** | Stripe Checkout | Anahtar **varsa** gerçek Checkout; **yoksa** demo yükseltme anında uygulanır. |
 
 Sayfalar: `/` (landing) · `/collection` (DB portföy) · `/property/[id]` (gated detay) ·
 `/account` (üyelik) · `/signin` (kimlik).
+
+**Yayına alma:** [DEPLOY.md](DEPLOY.md) — Vercel + Turso + Stripe adımları.
 
 ```bash
 cp .env.local.example .env.local   # ANTHROPIC_API_KEY, AUTH_SECRET, STRIPE_* (hepsi opsiyonel)

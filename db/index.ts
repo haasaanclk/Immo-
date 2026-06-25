@@ -1,22 +1,33 @@
 import "server-only";
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import { eq } from "drizzle-orm";
-import path from "path";
 import { randomUUID } from "crypto";
 import * as schema from "./schema";
 import { properties as seedProperties } from "@/data/properties";
 
-const DB_PATH = process.env.DATABASE_PATH || path.join(process.cwd(), "domaine.db");
+/**
+ * libSQL data layer — one driver for both worlds:
+ *   - Local dev:   DATABASE_URL=file:domaine.db   (default)
+ *   - Production:  DATABASE_URL=libsql://<db>.turso.io + DATABASE_AUTH_TOKEN  (Vercel-ready)
+ * The SQLite schema is unchanged; Turso is SQLite-compatible.
+ */
+const url = process.env.DATABASE_URL || "file:domaine.db";
+const authToken = process.env.DATABASE_AUTH_TOKEN;
 
-// Singleton across hot reloads / route invocations.
-const g = globalThis as unknown as { __domaineDb?: ReturnType<typeof create> };
+const client = createClient(authToken ? { url, authToken } : { url });
+export const db = drizzle(client, { schema });
 
-function create() {
-  const sqlite = new Database(DB_PATH);
-  sqlite.pragma("journal_mode = WAL");
+// One-time schema + seed, memoized across invocations.
+const g = globalThis as unknown as { __domaineReady?: Promise<void> };
 
-  sqlite.exec(`
+function ensureReady(): Promise<void> {
+  if (!g.__domaineReady) g.__domaineReady = init();
+  return g.__domaineReady;
+}
+
+async function init() {
+  await client.executeMultiple(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
@@ -50,18 +61,16 @@ function create() {
     );
   `);
 
-  // Lightweight migration for pre-existing DBs missing the profile column.
-  const cols = sqlite.prepare("PRAGMA table_info(users)").all() as { name: string }[];
-  if (!cols.some((c) => c.name === "lifestyle_profile")) {
-    sqlite.exec("ALTER TABLE users ADD COLUMN lifestyle_profile TEXT");
+  // Migration for pre-existing DBs missing the profile column.
+  const cols = await client.execute("PRAGMA table_info(users)");
+  if (!cols.rows.some((r) => (r as unknown as { name: string }).name === "lifestyle_profile")) {
+    await client.execute("ALTER TABLE users ADD COLUMN lifestyle_profile TEXT");
   }
 
-  const db = drizzle(sqlite, { schema });
-
   // Seed the catalog once.
-  const count = sqlite.prepare("SELECT COUNT(*) AS n FROM properties").get() as { n: number };
-  if (count.n === 0) {
-    const insert = db.insert(schema.properties).values(
+  const count = await client.execute("SELECT COUNT(*) AS n FROM properties");
+  if (Number((count.rows[0] as unknown as { n: number }).n) === 0) {
+    await db.insert(schema.properties).values(
       seedProperties.map((p) => ({
         id: p.id,
         name: p.name,
@@ -79,50 +88,52 @@ function create() {
         checkup: p.checkup,
       })),
     );
-    insert.run();
   }
-
-  return db;
 }
-
-export const db = g.__domaineDb ?? (g.__domaineDb = create());
 
 // ---- Data access ----
 
 export async function getAllProperties() {
-  return db.select().from(schema.properties).all();
+  await ensureReady();
+  return db.select().from(schema.properties);
 }
 
 export async function getPropertyById(id: string) {
-  const rows = db.select().from(schema.properties).where(eq(schema.properties.id, id)).all();
+  await ensureReady();
+  const rows = await db.select().from(schema.properties).where(eq(schema.properties.id, id));
   return rows[0] ?? null;
 }
 
 export async function getUserByEmail(email: string) {
-  const rows = db.select().from(schema.users).where(eq(schema.users.email, email.toLowerCase())).all();
+  await ensureReady();
+  const rows = await db.select().from(schema.users).where(eq(schema.users.email, email.toLowerCase()));
   return rows[0] ?? null;
 }
 
 export async function getUserById(id: string) {
-  const rows = db.select().from(schema.users).where(eq(schema.users.id, id)).all();
+  await ensureReady();
+  const rows = await db.select().from(schema.users).where(eq(schema.users.id, id));
   return rows[0] ?? null;
 }
 
 export async function createUser(email: string, passwordHash: string, name: string) {
+  await ensureReady();
   const id = randomUUID();
-  db.insert(schema.users)
-    .values({ id, email: email.toLowerCase(), passwordHash, name, tier: "resident", createdAt: Date.now() })
-    .run();
+  await db
+    .insert(schema.users)
+    .values({ id, email: email.toLowerCase(), passwordHash, name, tier: "resident", createdAt: Date.now() });
   return getUserById(id);
 }
 
 export async function setUserTier(userId: string, tier: string) {
-  db.update(schema.users).set({ tier }).where(eq(schema.users.id, userId)).run();
+  await ensureReady();
+  await db.update(schema.users).set({ tier }).where(eq(schema.users.id, userId));
 }
 
 export async function saveLifestyleProfile(
   userId: string,
   profile: import("./schema").LifestyleProfile,
 ) {
-  db.update(schema.users).set({ lifestyleProfile: profile }).where(eq(schema.users.id, userId)).run();
+  await ensureReady();
+  await db.update(schema.users).set({ lifestyleProfile: profile }).where(eq(schema.users.id, userId));
 }
