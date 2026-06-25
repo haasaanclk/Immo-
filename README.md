@@ -34,6 +34,13 @@ npm run build && npm run start
 
 Kaydetme (`✧/✦`) hem portföy kartlarında hem mülk detayında çalışır (`/api/saved`).
 
+## ⭐ Akıllı Finans — niceliksel karar zekâsı
+Her mülk sayfasında interaktif **özel finansal zekâ** (`components/detail/FinanceModule.tsx`):
+peşinat/vade/faiz sürgüleriyle aylık kredi ödemesi, toplam sahip olma maliyeti
+(bakım + enerji + vergi), bütçeye göre uygunluk kararı ve **10 yıllık değer projeksiyonu**
+(mülkün yatırım DNA'sına bağlı büyüme oranı). Tümü anlık, deterministik. Mülklere gerçek
+**fiyat** alanı eklendi.
+
 ## ⭐ DOMAINE Intelligence — kişiselleştirilmiş AI danışman
 Ürünün kalbi. Giriş yapmış kullanıcının concierge ile çıkardığı **yaşam profili DB'ye
 kaydedilir** (`users.lifestyle_profile`); her mülk sayfasında Claude, bu profile göre

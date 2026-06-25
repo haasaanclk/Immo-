@@ -44,6 +44,7 @@ async function init() {
       city TEXT NOT NULL,
       kind TEXT NOT NULL DEFAULT 'Residence',
       year INTEGER NOT NULL DEFAULT 2020,
+      price INTEGER NOT NULL DEFAULT 0,
       match INTEGER NOT NULL,
       prestige_score INTEGER NOT NULL,
       off_market INTEGER NOT NULL,
@@ -76,6 +77,9 @@ async function init() {
   if (!propNames.includes("year")) {
     await client.execute("ALTER TABLE properties ADD COLUMN year INTEGER NOT NULL DEFAULT 2020");
   }
+  if (!propNames.includes("price")) {
+    await client.execute("ALTER TABLE properties ADD COLUMN price INTEGER NOT NULL DEFAULT 0");
+  }
 
   // Seed the catalog once.
   const count = await client.execute("SELECT COUNT(*) AS n FROM properties");
@@ -88,6 +92,7 @@ async function init() {
         city: p.city,
         kind: p.kind,
         year: p.year,
+        price: p.price,
         match: p.match,
         prestigeScore: p.prestigeScore,
         offMarket: p.offMarket,

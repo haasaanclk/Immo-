@@ -19,6 +19,7 @@ export interface Property {
   city: string;
   kind: PropertyKind; // tipoloji / kategori
   year: number; // yapım / restorasyon yılı
+  price: number; // EUR
   match: number; // lifestyle match %
   prestigeScore: number;
   offMarket: boolean;
@@ -38,6 +39,7 @@ export const properties: Property[] = [
     city: "Zürich",
     kind: "Villa",
     year: 2019,
+    price: 12400000,
     match: 97,
     prestigeScore: 94,
     offMarket: true,
@@ -62,6 +64,7 @@ export const properties: Property[] = [
     city: "München",
     kind: "Penthouse",
     year: 2021,
+    price: 6800000,
     match: 93,
     prestigeScore: 91,
     offMarket: false,
@@ -86,6 +89,7 @@ export const properties: Property[] = [
     city: "Genève",
     kind: "Residence",
     year: 2016,
+    price: 9200000,
     match: 90,
     prestigeScore: 89,
     offMarket: true,
@@ -110,6 +114,7 @@ export const properties: Property[] = [
     city: "Wien",
     kind: "Estate",
     year: 1911,
+    price: 15500000,
     match: 92,
     prestigeScore: 96,
     offMarket: true,
@@ -134,6 +139,7 @@ export const properties: Property[] = [
     city: "Dubai",
     kind: "Waterfront",
     year: 2023,
+    price: 5400000,
     match: 88,
     prestigeScore: 90,
     offMarket: false,
@@ -158,6 +164,7 @@ export const properties: Property[] = [
     city: "München",
     kind: "Villa",
     year: 2020,
+    price: 4900000,
     match: 91,
     prestigeScore: 92,
     offMarket: false,
@@ -182,6 +189,7 @@ export const properties: Property[] = [
     city: "London",
     kind: "Residence",
     year: 1855,
+    price: 18500000,
     match: 89,
     prestigeScore: 95,
     offMarket: true,
@@ -206,6 +214,7 @@ export const properties: Property[] = [
     city: "Zürich",
     kind: "Waterfront",
     year: 2022,
+    price: 8700000,
     match: 90,
     prestigeScore: 91,
     offMarket: false,

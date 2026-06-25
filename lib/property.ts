@@ -12,6 +12,7 @@ export function rowToProperty(row: PropertyRow): Property {
     city: row.city,
     kind: row.kind as Property["kind"],
     year: row.year,
+    price: row.price,
     match: row.match,
     prestigeScore: row.prestigeScore,
     offMarket: row.offMarket,

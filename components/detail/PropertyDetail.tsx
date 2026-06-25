@@ -4,6 +4,10 @@ import { EstateFacade } from "@/components/art/EstateArt";
 import { Pill } from "@/components/ui/primitives";
 import { IntelligenceReport } from "./IntelligenceReport";
 import { SaveButton } from "./SaveButton";
+import { FinanceModule } from "./FinanceModule";
+
+const eur0 = (n: number) =>
+  new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
 function Gauge({ value, label }: { value: number; label: string }) {
   const pct = value * 10;
@@ -82,12 +86,18 @@ export function PropertyDetail({
             {p.name}
           </h1>
           <div className="mt-3 label-eyebrow text-sage">
-            {p.district} · {p.city}
+            {p.kind} · {p.district} · {p.city} · {p.year}
           </div>
         </div>
-        <div className="text-right">
-          <div className="label-eyebrow text-ink/50">Yaşam uyumu</div>
-          <div className="font-serif text-[40px] text-brass">{p.match}%</div>
+        <div className="flex items-end gap-10">
+          <div className="text-right">
+            <div className="label-eyebrow text-ink/50">Liste değeri</div>
+            <div className="font-serif text-[30px] text-forest-deep">{eur0(p.price)}</div>
+          </div>
+          <div className="text-right">
+            <div className="label-eyebrow text-ink/50">Yaşam uyumu</div>
+            <div className="font-serif text-[40px] text-brass">{p.match}%</div>
+          </div>
         </div>
       </div>
 
@@ -151,6 +161,9 @@ export function PropertyDetail({
           </div>
         </div>
       </div>
+
+      {/* Quantitative financial intelligence */}
+      <FinanceModule price={p.price} energy={p.dna.energy} investment={p.dna.investment} />
 
       {/* AI-generated, personalized intelligence report */}
       <IntelligenceReport
