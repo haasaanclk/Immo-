@@ -2,7 +2,7 @@ import { TopBar, Hero, Footer } from "@/components/sections/Chrome";
 import { Tiers, Palette, FeatureStrip } from "@/components/sections/Tiers";
 import { SectionHead } from "@/components/ui/primitives";
 import { Gallery, GalleryItem } from "@/components/ui/Gallery";
-import { ConciergeChat } from "@/components/screens/ConciergeChat";
+import { ConciergeLive } from "@/components/screens/ConciergeLive";
 import {
   LifestyleScreen,
   CuratedScreen,
@@ -34,9 +34,9 @@ export default function Home() {
             <GalleryItem
               eyebrow="Adım 1"
               title="Yaşam görüşmesi"
-              caption="Tıklayın — AI'nin profilinizi nasıl çıkardığını görün."
+              caption="Gerçek Claude concierge — sorularını yanıtlayın, profilinizi çıkarsın."
             >
-              <ConciergeChat />
+              <ConciergeLive />
             </GalleryItem>
             <GalleryItem
               eyebrow="Adım 2"

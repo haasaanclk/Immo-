@@ -107,6 +107,20 @@ export const lifestyleProfile = {
   priorities: ["Mahremiyet", "Mimari kalite", "Yatırım", "Ulaşım"],
 };
 
+/** Compact catalog string the AI concierge reasons over. */
+export function propertyCatalogForPrompt(): string {
+  return properties
+    .map(
+      (p) =>
+        `- id: ${p.id} | ${p.name}, ${p.district} (${p.city}) | ` +
+        `mimari ${p.dna.architecture}, malzeme ${p.dna.materials}, lokasyon ${p.dna.location}, ` +
+        `mahremiyet ${p.dna.privacy}, enerji ${p.dna.energy}, yatırım ${p.dna.investment} | ` +
+        `prestij ${p.prestigeScore}, sessizlik gündüz ${p.silence.day}dB / gece ${p.silence.night}dB | ` +
+        `${p.offMarket ? "off-market" : "halka açık"} | öne çıkanlar: ${p.reasons.join(", ")}`,
+    )
+    .join("\n");
+}
+
 export interface ConciergeQuestion {
   q: string;
   options: { value: string; chip: string }[];

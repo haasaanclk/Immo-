@@ -23,14 +23,29 @@ npm run dev      # http://localhost:3000
 npm run build && npm run start
 ```
 
+## Gerçek AI Concierge (Claude)
+Concierge ekranı gerçek **Claude** ile çalışır (`claude-opus-4-8`). Kullanıcının
+yaşam tarzı yanıtlarını gerçek bir sohbetle alır ve `present_profile` aracıyla
+yapılandırılmış bir yaşam profili + portföyden sıralanmış eşleşmeler üretir.
+
+```bash
+cp .env.local.example .env.local
+# .env.local içine ANTHROPIC_API_KEY=sk-ant-... ekleyin
+npm run dev
+```
+
+- API anahtarı **varsa**: concierge canlı Claude'a bağlanır (`app/api/concierge/route.ts`).
+- API anahtarı **yoksa**: uygulama otomatik olarak senaryolu **demo akışı**na düşer —
+  hiçbir şey bozulmaz, sorular yine yanıtlanıp profil üretilir.
+
 ### Mimari
-- **`app/`** — App Router. `layout.tsx` (next/font ile Cormorant/EB Garamond/Jost), `page.tsx` tüm bölümleri kurar.
+- **`app/`** — App Router. `layout.tsx` (next/font ile Cormorant/EB Garamond/Jost), `page.tsx` tüm bölümleri kurar, `api/concierge/route.ts` Claude API uç noktası.
 - **`tailwind.config.ts`** — "old money" tasarım token'ları (ivory · forest · brass · burgundy · sage) ve tipografi.
 - **`data/properties.ts`** — mülk veri modeli, concierge akışı ve iç mekân tarzları (tek doğruluk kaynağı).
 - **`components/`**
   - `ui/` — PhoneFrame, Gallery, Bar/Pill/Gauge gibi tasarım primitifleri
   - `art/EstateArt.tsx` — **kendi kendine yeten SVG görseller**: mülk cephesi + iç mekân sahnesi (harici fotoğraf/ağ gerektirmez, çevrimdışı çalışır)
-  - `screens/` — Concierge (interaktif), Lifestyle, DNA, Privacy, Silence/Health, Private Market, **AI Interior Designer (canlı tarz değiştirici)**
+  - `screens/` — **ConciergeLive (gerçek Claude sohbeti + demo fallback)**, Lifestyle, DNA, Privacy, Silence/Health, Private Market, **AI Interior Designer (canlı tarz değiştirici)**
   - `sections/` — TopBar, Hero, Tiers, Palette, Footer
 
 ### Hızlı statik önizleme
