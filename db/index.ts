@@ -23,6 +23,7 @@ function create() {
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL,
       tier TEXT NOT NULL DEFAULT 'resident',
+      lifestyle_profile TEXT,
       created_at INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS properties (
@@ -48,6 +49,12 @@ function create() {
       created_at INTEGER NOT NULL
     );
   `);
+
+  // Lightweight migration for pre-existing DBs missing the profile column.
+  const cols = sqlite.prepare("PRAGMA table_info(users)").all() as { name: string }[];
+  if (!cols.some((c) => c.name === "lifestyle_profile")) {
+    sqlite.exec("ALTER TABLE users ADD COLUMN lifestyle_profile TEXT");
+  }
 
   const db = drizzle(sqlite, { schema });
 
@@ -111,4 +118,11 @@ export async function createUser(email: string, passwordHash: string, name: stri
 
 export async function setUserTier(userId: string, tier: string) {
   db.update(schema.users).set({ tier }).where(eq(schema.users.id, userId)).run();
+}
+
+export async function saveLifestyleProfile(
+  userId: string,
+  profile: import("./schema").LifestyleProfile,
+) {
+  db.update(schema.users).set({ lifestyleProfile: profile }).where(eq(schema.users.id, userId)).run();
 }

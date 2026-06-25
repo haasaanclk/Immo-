@@ -1,12 +1,14 @@
 import "server-only";
 import { getSession } from "./auth";
 import { getUserById } from "@/db";
+import type { LifestyleProfile } from "@/db/schema";
 
 export interface CurrentUser {
   id: string;
   email: string;
   name: string;
   tier: string;
+  lifestyleProfile: LifestyleProfile | null;
 }
 
 /** Identity comes from the signed cookie; tier is always read fresh from the DB. */
@@ -15,5 +17,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (!session) return null;
   const user = await getUserById(session.userId);
   if (!user) return null;
-  return { id: user.id, email: user.email, name: user.name, tier: user.tier };
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    tier: user.tier,
+    lifestyleProfile: (user.lifestyleProfile as LifestyleProfile | null) ?? null,
+  };
 }

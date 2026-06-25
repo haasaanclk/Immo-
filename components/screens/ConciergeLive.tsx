@@ -38,6 +38,16 @@ export function ConciergeLive() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, profile, busy]);
 
+  function finishWith(p: Profile) {
+    setProfile(p);
+    // Persist to the logged-in user's record so every Intelligence report is personalized.
+    fetch("/api/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profile: p }),
+    }).catch(() => {});
+  }
+
   function scriptedAdvance(history: ApiMsg[]) {
     // No API key: walk the static flow, then synthesize a profile.
     const next = step + 1;
@@ -46,7 +56,7 @@ export function ConciergeLive() {
       setApi([...history, { role: "assistant", content: conciergeFlow[next].q }]);
       setStep(next);
     } else {
-      setProfile({
+      finishWith({
         tier: lifestyleProfile.tier,
         traits: lifestyleProfile.traits,
         priorities: lifestyleProfile.priorities,
@@ -82,7 +92,7 @@ export function ConciergeLive() {
         setDemo(true);
         window.setTimeout(() => scriptedAdvance(history), 320);
       } else if (data.type === "profile") {
-        setProfile(data.profile as Profile);
+        finishWith(data.profile as Profile);
       } else if (data.type === "question") {
         setMessages((m) => [...m, { from: "ai", text: data.text }]);
         setApi([...history, { role: "assistant", content: data.text }]);

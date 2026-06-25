@@ -22,7 +22,12 @@ export default async function PropertyPage({ params }: { params: { id: string } 
     <main className="min-h-screen">
       <SiteHeader />
       {locked ? <LockedView name={row.name} district={row.district} hue={row.hue} signedIn={!!user} /> : (
-        <PropertyDetail property={rowToProperty(row)} />
+        <PropertyDetail
+          property={rowToProperty(row)}
+          personalized={!!user?.lifestyleProfile}
+          userName={user?.name}
+          signedIn={!!user}
+        />
       )}
     </main>
   );

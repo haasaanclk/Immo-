@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Property } from "@/data/properties";
 import { EstateFacade } from "@/components/art/EstateArt";
 import { Pill } from "@/components/ui/primitives";
+import { IntelligenceReport } from "./IntelligenceReport";
 
 function Gauge({ value, label }: { value: number; label: string }) {
   const pct = value * 10;
@@ -44,7 +45,17 @@ function DnaRow({ k, v }: { k: string; v: string | number }) {
   );
 }
 
-export function PropertyDetail({ property }: { property: Property }) {
+export function PropertyDetail({
+  property,
+  personalized = false,
+  userName,
+  signedIn = false,
+}: {
+  property: Property;
+  personalized?: boolean;
+  userName?: string;
+  signedIn?: boolean;
+}) {
   const p = property;
   return (
     <article className="mx-auto max-w-wrap px-7 py-12">
@@ -137,6 +148,14 @@ export function PropertyDetail({ property }: { property: Property }) {
           </div>
         </div>
       </div>
+
+      {/* AI-generated, personalized intelligence report */}
+      <IntelligenceReport
+        propertyId={p.id}
+        personalized={personalized}
+        userName={userName}
+        signedIn={signedIn}
+      />
 
       <div className="mt-14 flex flex-wrap gap-4 border-t border-ink/10 pt-8">
         <Link

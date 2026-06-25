@@ -23,6 +23,24 @@ npm run dev      # http://localhost:3000
 npm run build && npm run start
 ```
 
+## ⭐ DOMAINE Intelligence — kişiselleştirilmiş AI danışman
+Ürünün kalbi. Giriş yapmış kullanıcının concierge ile çıkardığı **yaşam profili DB'ye
+kaydedilir** (`users.lifestyle_profile`); her mülk sayfasında Claude, bu profile göre
+**akan (streaming)** bir zekâ raporu üretir:
+**Yaşam Uyumu · Yatırım Tezi · Müzakere Stratejisi · Riskler · Karar** — kullanıcının
+adına, önceliklerine ve mülkün gerçek verisine bağlı, somut tekliflerle.
+
+- `app/api/intelligence/route.ts` — Claude streaming; anahtar yoksa veriden sentezlenen
+  rapor aynı "yazılıyor" etkisiyle akar.
+- `app/api/profile/route.ts` — concierge profilini kullanıcıya kaydeder.
+- `components/detail/IntelligenceReport.tsx` — canlı stream + zarif markdown render.
+
+## ⭐ Canlı AI Interior Designer (Atelier)
+Serbest metinle ("bu evi İskandinav yap, çalışma köşesi ekle") Claude gerçek bir yeniden
+tasarım üretir: HEX paleti, malzemeler, maliyet, ev değerine etki ve gerekçe — oda anında
+yeniden render olur. `app/api/atelier/route.ts` (anahtar yoksa anahtar-kelime eşleştiren
+demo). Üç hazır tarz çipi de korunur.
+
 ## Gerçek AI Concierge (Claude)
 Concierge ekranı gerçek **Claude** ile çalışır (`claude-opus-4-8`). Kullanıcının
 yaşam tarzı yanıtlarını gerçek bir sohbetle alır ve `present_profile` aracıyla

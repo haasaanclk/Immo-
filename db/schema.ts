@@ -12,8 +12,18 @@ export const users = sqliteTable("users", {
   passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
   tier: text("tier").notNull().default("resident"), // resident | prive | cercle_noir
+  // The user's lifestyle DNA, produced by the AI concierge — the memory that
+  // personalizes every Intelligence report.
+  lifestyleProfile: text("lifestyle_profile", { mode: "json" }).$type<LifestyleProfile | null>(),
   createdAt: integer("created_at").notNull(),
 });
+
+export interface LifestyleProfile {
+  tier: string;
+  traits: { label: string; value: number }[];
+  priorities: string[];
+  matches?: { id: string; match: number; reasons: string[] }[];
+}
 
 export const properties = sqliteTable("properties", {
   id: text("id").primaryKey(),
