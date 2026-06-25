@@ -1,4 +1,45 @@
-# DOMAINE — Yayına Alma (Vercel + Turso)
+# DOMAINE — Yayına Alma
+
+## ⚡ Otomatik yol — GitHub Actions (Turso + Vercel)
+
+`.github/workflows/deploy.yml` her şeyi GitHub'ın sunucularında yapar: Turso veritabanı
+dalını oluşturur ([create-turso-db-branch](https://github.com/marketplace/actions/create-turso-database-branch))
+ve uygulamayı Vercel'e yayına alır. Sadece aşağıdaki **secret'ları bir kez** eklemen gerekir.
+
+### 1) Turso (CLI ile ~3 dk)
+```bash
+curl -sSfL https://get.tur.so/install.sh | bash      # Turso CLI
+turso auth login                                      # tarayıcıda giriş
+turso db create domaine-seed --group default          # tohum DB (boş — uygulama kendi seed'ler)
+turso org list           # → TURSO_ORG (org slug)
+turso group list         # → TURSO_GROUP (genelde 'default')
+turso auth api-tokens mint domaine   # → TURSO_API_TOKEN
+```
+
+### 2) Vercel
+- vercel.com → **Settings → Tokens → Create Token** → `VERCEL_TOKEN`
+
+### 3) GitHub secret'ları ekle
+Repo → **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret | Değer |
+|---|---|
+| `TURSO_ORG` | `turso org list` çıktısı |
+| `TURSO_API_TOKEN` | mint edilen token |
+| `TURSO_SEED_DB` | `domaine-seed` |
+| `TURSO_GROUP` | `default` |
+| `VERCEL_TOKEN` | Vercel token |
+| `AUTH_SECRET` | Claude'un ürettiği rastgele dize (sohbette verildi) |
+| `ANTHROPIC_API_KEY` | _(opsiyonel — yoksa demo modu)_ |
+| `STRIPE_SECRET_KEY` | _(opsiyonel)_ |
+
+### 4) Çalıştır
+Repo → **Actions → "Deploy DOMAINE" → Run workflow.** Bittiğinde çalışmanın özetinde
+**canlı linkin** görünür. Sonraki her push'ta otomatik yeniden yayınlanır.
+
+---
+
+## Elle yol — Vercel + Turso (alternatif)
 
 DOMAINE sunucusuz (serverless) ortamda çalışacak şekilde hazırdır. Veritabanı **libSQL**
 sürücüsü kullanır: yerelde dosya (`file:`), üretimde **Turso** bulut (`libsql://`) — şema

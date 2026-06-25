@@ -1,0 +1,62 @@
+name: Deploy DOMAINE (Turso + Vercel)
+
+# Manuel tetikleme: Actions sekmesi → "Deploy DOMAINE" → Run workflow.
+# (Secret'ları ekledikten sonra çalıştırın. İsterseniz aşağıya push tetikleyici
+#  eklenebilir: on: { push: { branches: [main] } }.)
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 1) Turso veritabanı dalını oluştur (kullanıcının paylaştığı eylem).
+      #    Çıktı: libSQL URL + JWT token → uygulamanın DATABASE_URL / DATABASE_AUTH_TOKEN'ı.
+      - name: Create Turso database branch
+        id: turso
+        uses: laudebugs/create-turso-db-branch@v0.0.1-alpha
+        with:
+          org: ${{ secrets.TURSO_ORG }}
+          api-token: ${{ secrets.TURSO_API_TOKEN }}
+          branch-name: domaine-live
+          seed-database-name: ${{ secrets.TURSO_SEED_DB }}
+          group: ${{ secrets.TURSO_GROUP }}
+          overwrite-if-exists: true
+          create-auth-token: true
+          auth-token-authorization: read-write
+          auth-token-expiration: 1w
+
+      # 2) Vercel'e yayına al. DB kimlik bilgileri 1. adımın çıktısından gelir.
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          DATABASE_URL: ${{ steps.turso.outputs.db_branch_libsql_url }}
+          DATABASE_AUTH_TOKEN: ${{ steps.turso.outputs.db_jwt_auth_token }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+        run: |
+          set -e
+          npm i -g vercel@latest
+
+          args=(deploy --prod --yes --token="$VERCEL_TOKEN"
+            -e DATABASE_URL="$DATABASE_URL"
+            -e DATABASE_AUTH_TOKEN="$DATABASE_AUTH_TOKEN"
+            -e AUTH_SECRET="$AUTH_SECRET")
+
+          # Opsiyonel anahtarlar — yoksa uygulama demo moduna düşer.
+          [ -n "$ANTHROPIC_API_KEY" ] && args+=(-e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY")
+          [ -n "$STRIPE_SECRET_KEY" ] && args+=(-e STRIPE_SECRET_KEY="$STRIPE_SECRET_KEY")
+          [ -n "$STRIPE_WEBHOOK_SECRET" ] && args+=(-e STRIPE_WEBHOOK_SECRET="$STRIPE_WEBHOOK_SECRET")
+
+          url=$(vercel "${args[@]}")
+          echo "Deployed → $url"
+          {
+            echo "## 🚀 DOMAINE yayında"
+            echo ""
+            echo "**Canlı link:** $url"
+          } >> "$GITHUB_STEP_SUMMARY"
