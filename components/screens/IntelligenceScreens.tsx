@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ScreenTitle, ScreenDivider } from "@/components/ui/PhoneFrame";
 import { Bar, Pill } from "@/components/ui/primitives";
 import { EstateFacade } from "@/components/art/EstateArt";
@@ -39,7 +40,10 @@ export function CuratedScreen() {
       <ScreenTitle>FOR YOU</ScreenTitle>
       <ScreenDivider />
       <div className="label-eyebrow mb-2.5">Size özel · {properties.length} mülk</div>
-      <div className="overflow-hidden rounded-2xl border border-brass/30 bg-white">
+      <Link
+        href={`/property/${top.id}`}
+        className="block overflow-hidden rounded-2xl border border-brass/30 bg-white"
+      >
         <div className="relative h-[120px]">
           <EstateFacade hue={top.hue} className="h-full w-full" />
           {top.offMarket && (
@@ -57,20 +61,21 @@ export function CuratedScreen() {
             Yaşam uyumu — {top.match}%
           </div>
         </div>
-      </div>
+      </Link>
       <div className="mt-3.5 flex items-center gap-2.5">
         <div className="h-px flex-1 bg-ivory-2" />
         <span className="label-eyebrow text-sage">Sıradaki</span>
         <div className="h-px flex-1 bg-ivory-2" />
       </div>
       {rest.map((r) => (
-        <div
+        <Link
           key={r.id}
+          href={`/property/${r.id}`}
           className="mt-3 flex items-center justify-between font-serif text-[15px] text-forest"
         >
           <span>{r.name}</span>
           <span className="text-brass">{r.match}%</span>
-        </div>
+        </Link>
       ))}
     </div>
   );

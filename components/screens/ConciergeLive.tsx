@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { conciergeFlow, lifestyleProfile, properties } from "@/data/properties";
 import { ScreenTitle, ScreenDivider } from "@/components/ui/PhoneFrame";
 
@@ -205,7 +206,11 @@ function ProfileResult({ profile, demo }: { profile: Profile; demo: boolean }) {
         {profile.matches.slice(0, 3).map((m) => {
           const p = byId(m.id);
           return (
-            <div key={m.id} className="mt-3 border-l border-brass/40 pl-3">
+            <Link
+              key={m.id}
+              href={`/property/${m.id}`}
+              className="mt-3 block border-l border-brass/40 pl-3"
+            >
               <div className="flex items-center justify-between">
                 <span className="font-serif text-[16px] text-forest-deep">
                   {p?.name ?? m.id}
@@ -215,7 +220,7 @@ function ProfileResult({ profile, demo }: { profile: Profile; demo: boolean }) {
               <div className="mt-1 text-[12.5px] leading-snug text-ink/60">
                 {m.reasons.slice(0, 4).map((r) => `+ ${r}`).join("  ")}
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

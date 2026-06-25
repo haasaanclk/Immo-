@@ -38,8 +38,26 @@ npm run dev
 - API anahtarı **yoksa**: uygulama otomatik olarak senaryolu **demo akışı**na düşer —
   hiçbir şey bozulmaz, sorular yine yanıtlanıp profil üretilir.
 
+## Veritabanı · Üyelik · Ödeme
+| Katman | Teknoloji | Davranış |
+|---|---|---|
+| **Veritabanı** | Drizzle ORM + SQLite (`better-sqlite3`) | İlk çalışmada otomatik tablo + portföy seed'i. **Postgres'e hazır** — `db/schema.ts` / `db/index.ts` notlarıyla dialect değişimi. |
+| **Kimlik** | bcrypt + JWT (`jose`) httpOnly cookie | Kayıt / giriş / çıkış. Tier her zaman DB'den okunur (stale cookie yok). |
+| **Üyelik** | `lib/membership.ts` | Résident / Privé / Cercle Noir. Off-market mülkler Privé+ gerektirir. |
+| **Ödeme** | Stripe Checkout | Anahtar **varsa** gerçek Checkout; **yoksa** demo yükseltme anında uygulanır. |
+
+Sayfalar: `/` (landing) · `/collection` (DB portföy) · `/property/[id]` (gated detay) ·
+`/account` (üyelik) · `/signin` (kimlik).
+
+```bash
+cp .env.local.example .env.local   # ANTHROPIC_API_KEY, AUTH_SECRET, STRIPE_* (hepsi opsiyonel)
+npm run dev
+```
+
 ### Mimari
-- **`app/`** — App Router. `layout.tsx` (next/font ile Cormorant/EB Garamond/Jost), `page.tsx` tüm bölümleri kurar, `api/concierge/route.ts` Claude API uç noktası.
+- **`app/`** — App Router. `layout.tsx` (next/font), `page.tsx` landing, `api/` (concierge, auth, checkout, stripe webhook), `collection` · `property/[id]` · `account` · `signin` sayfaları.
+- **`db/`** — Drizzle schema + client (auto-init/seed) + veri erişim fonksiyonları.
+- **`lib/`** — `auth.ts` (oturum), `current-user.ts` (DB'den tier), `membership.ts` (katmanlar + gating), `property.ts` (DB→view mapper).
 - **`tailwind.config.ts`** — "old money" tasarım token'ları (ivory · forest · brass · burgundy · sage) ve tipografi.
 - **`data/properties.ts`** — mülk veri modeli, concierge akışı ve iç mekân tarzları (tek doğruluk kaynağı).
 - **`components/`**

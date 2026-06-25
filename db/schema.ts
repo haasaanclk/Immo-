@@ -1,0 +1,43 @@
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+
+/**
+ * Drizzle schema (SQLite for local dev). Postgres-portable: swap the imports to
+ * `drizzle-orm/pg-core` (pgTable / varchar / boolean / jsonb) and the driver in
+ * db/index.ts to migrate to Postgres — the table/column shape is unchanged.
+ */
+
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  name: text("name").notNull(),
+  tier: text("tier").notNull().default("resident"), // resident | prive | cercle_noir
+  createdAt: integer("created_at").notNull(),
+});
+
+export const properties = sqliteTable("properties", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  district: text("district").notNull(),
+  city: text("city").notNull(),
+  match: integer("match").notNull(),
+  prestigeScore: integer("prestige_score").notNull(),
+  offMarket: integer("off_market", { mode: "boolean" }).notNull(),
+  privacyLevel: real("privacy_level").notNull(),
+  silenceDay: integer("silence_day").notNull(),
+  silenceNight: integer("silence_night").notNull(),
+  hue: integer("hue").notNull(),
+  reasons: text("reasons", { mode: "json" }).notNull().$type<string[]>(),
+  dna: text("dna", { mode: "json" }).notNull().$type<Record<string, number | string>>(),
+  checkup: text("checkup", { mode: "json" }).notNull().$type<Record<string, string>>(),
+});
+
+export const savedProperties = sqliteTable("saved_properties", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  propertyId: text("property_id").notNull(),
+  createdAt: integer("created_at").notNull(),
+});
+
+export type UserRow = typeof users.$inferSelect;
+export type PropertyRow = typeof properties.$inferSelect;

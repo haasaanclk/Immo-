@@ -1,16 +1,20 @@
-export function TopBar() {
+import Link from "next/link";
+import { getCurrentUser } from "@/lib/current-user";
+import { tierInfo } from "@/lib/membership";
+
+export async function TopBar() {
+  const user = await getCurrentUser();
   const links = [
     ["Concierge", "#concierge"],
     ["Intelligence", "#intelligence"],
     ["Private Market", "#private"],
     ["Atelier", "#atelier"],
-    ["Membership", "#membership"],
   ];
   return (
     <div className="sticky top-0 z-50 border-b border-ink/10 bg-ivory/85 backdrop-blur-md">
       <div className="mx-auto flex h-[72px] max-w-wrap items-center justify-between px-7">
         <div className="pl-[0.42em] font-serif text-[26px] tracking-brand">DOMAINE</div>
-        <nav className="hidden gap-[34px] md:flex">
+        <nav className="hidden items-center gap-[34px] md:flex">
           {links.map(([label, href]) => (
             <a
               key={href}
@@ -20,12 +24,18 @@ export function TopBar() {
               {label}
             </a>
           ))}
-          <a
-            href="#membership"
+          <Link
+            href="/collection"
+            className="font-label text-[11px] uppercase tracking-[0.18em] text-ink/70 transition-colors hover:text-forest"
+          >
+            Collection
+          </Link>
+          <Link
+            href={user ? "/account" : "/signin"}
             className="border-b border-brass pb-0.5 font-label text-[11px] uppercase tracking-[0.18em] text-forest"
           >
-            Request Invitation
-          </a>
+            {user ? `${user.name.split(" ")[0]} · ${tierInfo(user.tier).name}` : "Giriş"}
+          </Link>
         </nav>
       </div>
     </div>
