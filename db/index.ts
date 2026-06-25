@@ -62,6 +62,18 @@ async function init() {
       property_id TEXT NOT NULL,
       created_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS viewings (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      property_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      preferred_date TEXT,
+      qualification TEXT,
+      anonymous INTEGER NOT NULL DEFAULT 1,
+      note TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at INTEGER NOT NULL
+    );
   `);
 
   // Migrations for pre-existing DBs missing newer columns.
@@ -208,4 +220,42 @@ export async function unsaveProperty(userId: string, propertyId: string) {
         eq(schema.savedProperties.propertyId, propertyId),
       ),
     );
+}
+
+// ---- Private viewings / Invisible Buyer requests ----
+
+export interface NewViewing {
+  propertyId: string;
+  type: "viewing" | "interest";
+  preferredDate?: string;
+  qualification?: string;
+  anonymous: boolean;
+  note?: string;
+}
+
+export async function createViewing(userId: string, v: NewViewing) {
+  await ensureReady();
+  const id = randomUUID();
+  await db.insert(schema.viewings).values({
+    id,
+    userId,
+    propertyId: v.propertyId,
+    type: v.type,
+    preferredDate: v.preferredDate ?? null,
+    qualification: v.qualification ?? null,
+    anonymous: v.anonymous,
+    note: v.note ?? null,
+    status: "pending",
+    createdAt: Date.now(),
+  });
+  return id;
+}
+
+export async function getViewingsByUser(userId: string) {
+  await ensureReady();
+  const rows = await db
+    .select()
+    .from(schema.viewings)
+    .where(eq(schema.viewings.userId, userId));
+  return rows.sort((a, b) => b.createdAt - a.createdAt);
 }

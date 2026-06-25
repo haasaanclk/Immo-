@@ -45,6 +45,19 @@ export const properties = sqliteTable("properties", {
   checkup: text("checkup", { mode: "json" }).notNull().$type<Record<string, string>>(),
 });
 
+export const viewings = sqliteTable("viewings", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  propertyId: text("property_id").notNull(),
+  type: text("type").notNull(), // "viewing" (özel gösterim) | "interest" (invisible buyer)
+  preferredDate: text("preferred_date"),
+  qualification: text("qualification"), // masked proof-of-funds band
+  anonymous: integer("anonymous", { mode: "boolean" }).notNull().default(true),
+  note: text("note"),
+  status: text("status").notNull().default("pending"),
+  createdAt: integer("created_at").notNull(),
+});
+
 export const savedProperties = sqliteTable("saved_properties", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),

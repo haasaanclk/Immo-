@@ -34,6 +34,12 @@ npm run build && npm run start
 
 Kaydetme (`✧/✦`) hem portföy kartlarında hem mülk detayında çalışır (`/api/saved`).
 
+## ⭐ Özel Gösterim & Invisible Buyer — "mahremiyetini koru"
+Mülk sayfasından gerçek bir **özel gösterim / gizli ilgi** talebi: kimlik gizli kalır
+(`anonymous`), satıcıya yalnızca **maskelenmiş finansal yeterlilik** iletilir. Tarih/saat,
+yeterlilik bandı ve not ile DB'ye kaydedilir (`viewings` tablosu, `/api/viewing`),
+panelde "Gösterim talepleriniz" olarak izlenir.
+
 ## ⭐ Akıllı Finans — niceliksel karar zekâsı
 Her mülk sayfasında interaktif **özel finansal zekâ** (`components/detail/FinanceModule.tsx`):
 peşinat/vade/faiz sürgüleriyle aylık kredi ödemesi, toplam sahip olma maliyeti

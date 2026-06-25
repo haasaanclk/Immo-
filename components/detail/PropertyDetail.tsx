@@ -5,6 +5,7 @@ import { Pill } from "@/components/ui/primitives";
 import { IntelligenceReport } from "./IntelligenceReport";
 import { SaveButton } from "./SaveButton";
 import { FinanceModule } from "./FinanceModule";
+import { RequestViewing } from "./RequestViewing";
 
 const eur0 = (n: number) =>
   new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
@@ -173,20 +174,17 @@ export function PropertyDetail({
         signedIn={signedIn}
       />
 
-      <div className="mt-14 flex flex-wrap gap-4 border-t border-ink/10 pt-8">
-        <Link
-          href="/account"
-          className="rounded-sm bg-forest px-6 py-3 font-label text-[11px] uppercase tracking-[0.2em] text-ivory transition-colors hover:bg-forest-deep"
-        >
-          Özel gösterim talep et
-        </Link>
-        <SaveButton propertyId={p.id} initialSaved={saved} signedIn={signedIn} />
-        <Link
-          href="/collection"
-          className="rounded-sm border border-ink/20 px-6 py-3 font-label text-[11px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-forest hover:text-forest"
-        >
-          Portföye dön
-        </Link>
+      <div className="mt-14 border-t border-ink/10 pt-8">
+        <RequestViewing propertyId={p.id} propertyName={p.name} signedIn={signedIn} />
+        <div className="mt-4 flex flex-wrap gap-4">
+          <SaveButton propertyId={p.id} initialSaved={saved} signedIn={signedIn} />
+          <Link
+            href="/collection"
+            className="rounded-sm border border-ink/20 px-6 py-3 font-label text-[11px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-forest hover:text-forest"
+          >
+            Portföye dön
+          </Link>
+        </div>
       </div>
     </article>
   );

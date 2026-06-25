@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getAllProperties, getSavedProperties } from "@/db";
+import { getAllProperties, getSavedProperties, getViewingsByUser } from "@/db";
 import { getCurrentUser } from "@/lib/current-user";
 import { tierInfo, canViewPrivate } from "@/lib/membership";
 import { rowToProperty } from "@/lib/property";
@@ -23,6 +23,8 @@ export default async function DashboardPage() {
   const ranked = rankForProfile(profile, all).slice(0, 3);
   const savedRows = await getSavedProperties(user.id);
   const saved = savedRows.map(rowToProperty);
+  const viewings = await getViewingsByUser(user.id);
+  const nameById = new Map(all.map((p) => [p.id, p]));
 
   return (
     <main className="min-h-screen">
@@ -152,6 +154,52 @@ export default async function DashboardPage() {
             </p>
           )}
         </section>
+
+        {/* Private viewings / Invisible Buyer requests */}
+        {viewings.length > 0 && (
+          <section className="mt-16">
+            <div className="label-eyebrow mb-6">Gösterim talepleriniz</div>
+            <div className="overflow-hidden rounded-xl border border-brass/25">
+              {viewings.map((v, i) => {
+                const prop = nameById.get(v.propertyId);
+                return (
+                  <div
+                    key={v.id}
+                    className={`flex flex-wrap items-center justify-between gap-3 px-6 py-4 ${
+                      i > 0 ? "border-t border-ink/10" : ""
+                    }`}
+                  >
+                    <div>
+                      <div className="font-serif text-[19px] text-forest-deep">
+                        {prop?.name ?? v.propertyId}
+                        {prop && (
+                          <span className="ml-2 font-label text-[10px] uppercase tracking-[0.14em] text-sage">
+                            {prop.city}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 text-[13.5px] text-ink/55">
+                        {v.type === "viewing" ? "Özel gösterim" : "Gizli ilgi"}
+                        {v.preferredDate ? ` · ${v.preferredDate}` : ""}
+                        {v.qualification ? ` · ${v.qualification}` : ""}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {v.anonymous && (
+                        <span className="font-label text-[9.5px] uppercase tracking-[0.16em] text-brass">
+                          ◍ Görünmez alıcı
+                        </span>
+                      )}
+                      <span className="rounded-full border border-brass px-3 py-1 font-label text-[9.5px] uppercase tracking-[0.16em] text-brass">
+                        {v.status === "pending" ? "İnceleniyor" : v.status}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );
