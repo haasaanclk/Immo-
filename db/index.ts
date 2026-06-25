@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import { eq } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import * as schema from "./schema";
 import { properties as seedProperties } from "@/data/properties";
@@ -136,4 +136,59 @@ export async function saveLifestyleProfile(
 ) {
   await ensureReady();
   await db.update(schema.users).set({ lifestyleProfile: profile }).where(eq(schema.users.id, userId));
+}
+
+// ---- Saved properties (favorites) ----
+
+export async function getSavedPropertyIds(userId: string): Promise<string[]> {
+  await ensureReady();
+  const rows = await db
+    .select({ propertyId: schema.savedProperties.propertyId })
+    .from(schema.savedProperties)
+    .where(eq(schema.savedProperties.userId, userId));
+  return rows.map((r) => r.propertyId);
+}
+
+export async function getSavedProperties(userId: string) {
+  await ensureReady();
+  const ids = await getSavedPropertyIds(userId);
+  if (ids.length === 0) return [];
+  return db.select().from(schema.properties).where(inArray(schema.properties.id, ids));
+}
+
+export async function isSaved(userId: string, propertyId: string): Promise<boolean> {
+  await ensureReady();
+  const rows = await db
+    .select({ id: schema.savedProperties.id })
+    .from(schema.savedProperties)
+    .where(
+      and(
+        eq(schema.savedProperties.userId, userId),
+        eq(schema.savedProperties.propertyId, propertyId),
+      ),
+    );
+  return rows.length > 0;
+}
+
+export async function saveProperty(userId: string, propertyId: string) {
+  await ensureReady();
+  if (await isSaved(userId, propertyId)) return;
+  await db.insert(schema.savedProperties).values({
+    id: randomUUID(),
+    userId,
+    propertyId,
+    createdAt: Date.now(),
+  });
+}
+
+export async function unsaveProperty(userId: string, propertyId: string) {
+  await ensureReady();
+  await db
+    .delete(schema.savedProperties)
+    .where(
+      and(
+        eq(schema.savedProperties.userId, userId),
+        eq(schema.savedProperties.propertyId, propertyId),
+      ),
+    );
 }

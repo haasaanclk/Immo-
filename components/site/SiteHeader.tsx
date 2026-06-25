@@ -19,7 +19,7 @@ export async function SiteHeader() {
           </Link>
           {user ? (
             <Link
-              href="/account"
+              href="/dashboard"
               className="border-b border-brass pb-0.5 font-label text-[11px] uppercase tracking-[0.18em] text-forest"
             >
               {user.name.split(" ")[0]} · {tierInfo(user.tier).name}

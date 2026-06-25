@@ -31,7 +31,7 @@ export async function TopBar() {
             Collection
           </Link>
           <Link
-            href={user ? "/account" : "/signin"}
+            href={user ? "/dashboard" : "/signin"}
             className="border-b border-brass pb-0.5 font-label text-[11px] uppercase tracking-[0.18em] text-forest"
           >
             {user ? `${user.name.split(" ")[0]} · ${tierInfo(user.tier).name}` : "Giriş"}

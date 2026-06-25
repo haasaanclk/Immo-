@@ -3,6 +3,7 @@ import type { Property } from "@/data/properties";
 import { EstateFacade } from "@/components/art/EstateArt";
 import { Pill } from "@/components/ui/primitives";
 import { IntelligenceReport } from "./IntelligenceReport";
+import { SaveButton } from "./SaveButton";
 
 function Gauge({ value, label }: { value: number; label: string }) {
   const pct = value * 10;
@@ -50,11 +51,13 @@ export function PropertyDetail({
   personalized = false,
   userName,
   signedIn = false,
+  saved = false,
 }: {
   property: Property;
   personalized?: boolean;
   userName?: string;
   signedIn?: boolean;
+  saved?: boolean;
 }) {
   const p = property;
   return (
@@ -164,6 +167,7 @@ export function PropertyDetail({
         >
           Özel gösterim talep et
         </Link>
+        <SaveButton propertyId={p.id} initialSaved={saved} signedIn={signedIn} />
         <Link
           href="/collection"
           className="rounded-sm border border-ink/20 px-6 py-3 font-label text-[11px] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:border-forest hover:text-forest"

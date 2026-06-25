@@ -26,6 +26,12 @@ export default async function AccountPage({
           </Link>
           <div className="flex items-center gap-6">
             <Link
+              href="/dashboard"
+              className="font-label text-[11px] uppercase tracking-[0.18em] text-ink/70 hover:text-forest"
+            >
+              Panel
+            </Link>
+            <Link
               href="/collection"
               className="font-label text-[11px] uppercase tracking-[0.18em] text-ink/70 hover:text-forest"
             >

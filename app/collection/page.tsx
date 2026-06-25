@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { getAllProperties } from "@/db";
+import { getAllProperties, getSavedPropertyIds } from "@/db";
 import { getCurrentUser } from "@/lib/current-user";
 import { canViewPrivate } from "@/lib/membership";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { EstateFacade } from "@/components/art/EstateArt";
 import { Pill } from "@/components/ui/primitives";
 import { SectionHead } from "@/components/ui/primitives";
+import { SaveButton } from "@/components/detail/SaveButton";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export default async function CollectionPage() {
   const rows = await getAllProperties();
   const user = await getCurrentUser();
   const member = canViewPrivate(user?.tier);
+  const savedIds = new Set(user ? await getSavedPropertyIds(user.id) : []);
 
   return (
     <main className="min-h-screen">
@@ -38,6 +40,14 @@ export default async function CollectionPage() {
                   </div>
                   <div className="absolute left-3 top-3 flex gap-2">
                     {r.offMarket && <Pill tone="soft">Off-market</Pill>}
+                  </div>
+                  <div className="absolute right-3 top-3">
+                    <SaveButton
+                      propertyId={r.id}
+                      initialSaved={savedIds.has(r.id)}
+                      signedIn={!!user}
+                      variant="chip"
+                    />
                   </div>
                   {locked && (
                     <div className="absolute inset-0 flex items-center justify-center bg-forest-deep/45">

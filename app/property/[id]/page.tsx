@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPropertyById } from "@/db";
+import { getPropertyById, isSaved } from "@/db";
 import { getCurrentUser } from "@/lib/current-user";
 import { canViewPrivate } from "@/lib/membership";
 import { rowToProperty } from "@/lib/property";
@@ -17,6 +17,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
 
   const user = await getCurrentUser();
   const locked = row.offMarket && !canViewPrivate(user?.tier);
+  const saved = user ? await isSaved(user.id, row.id) : false;
 
   return (
     <main className="min-h-screen">
@@ -27,6 +28,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
           personalized={!!user?.lifestyleProfile}
           userName={user?.name}
           signedIn={!!user}
+          saved={saved}
         />
       )}
     </main>

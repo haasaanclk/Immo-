@@ -23,6 +23,15 @@ npm run dev      # http://localhost:3000
 npm run build && npm run start
 ```
 
+## ⭐ Kişisel Panel — "Sizin DOMAINE'iniz"
+`/dashboard` her şeyi tek deneyimde toplar:
+- **Yaşam DNA'nız** — concierge'ün çıkardığı profil (eksenler + öncelikler)
+- **Sizin için seçildi** — `lib/matching.ts` profilinizi canlı DB portföyüne karşı puanlar
+  (öncelik + eksen ağırlıkları → 0-100 uyum), kişisel gerekçelerle sıralar
+- **Koleksiyonunuz** — kaydettiğiniz mülkler (`saved_properties`)
+
+Kaydetme (`✧/✦`) hem portföy kartlarında hem mülk detayında çalışır (`/api/saved`).
+
 ## ⭐ DOMAINE Intelligence — kişiselleştirilmiş AI danışman
 Ürünün kalbi. Giriş yapmış kullanıcının concierge ile çıkardığı **yaşam profili DB'ye
 kaydedilir** (`users.lifestyle_profile`); her mülk sayfasında Claude, bu profile göre
