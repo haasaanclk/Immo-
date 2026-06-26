@@ -223,7 +223,7 @@ function initCursor() {
   const setScale = (s) => gsap.to(cursor, { scale: s, duration: 0.3, ease: "power3.out", overwrite: "auto" });
   scene.addEventListener("pointerenter", () => setScale(1.25));
   scene.addEventListener("pointerleave", () => setScale(1));
-  document.querySelectorAll(".nav a, .corner").forEach((el) => {
+  document.querySelectorAll(".nav a, .corner, .label").forEach((el) => {
     el.addEventListener("pointerenter", () => setScale(0.6));
     el.addEventListener("pointerleave", () => setScale(1));
   });
@@ -241,7 +241,8 @@ function buildLabels() {
   CATEGORIES.forEach((cat, i) => {
     const angle = -90 + (360 / n) * i, rad = angle * DEG;
     const x = cx + Math.cos(rad) * lrx, y = cy + Math.sin(rad) * lry;
-    const el = document.createElement("div"); el.className = "label";
+    const el = document.createElement("a"); el.className = "label";
+    el.href = `estates.html?cat=${encodeURIComponent(cat.name)}`;
     el.style.left = `${x}px`; el.style.top = `${y}px`;
     el.innerHTML = `<span class="ul">${cat.name}</span><sup>(${cat.count})</sup>`;
     labelsWrap.appendChild(el);
