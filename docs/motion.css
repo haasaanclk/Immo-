@@ -1,0 +1,58 @@
+/* ============================================================================
+   DOMAINE — motion.css  (cinematic motion layer for the sub-pages)
+   Dependency-free: CSS transitions + IntersectionObserver + WAAPI in motion.js
+   ========================================================================== */
+
+/* --- scroll-reveal --- */
+[data-reveal]{ opacity:0; transform:translateY(22px); will-change:opacity,transform;
+  transition:opacity .85s cubic-bezier(.2,.7,.2,1), transform .85s cubic-bezier(.2,.7,.2,1); }
+[data-reveal].in{ opacity:1; transform:none; }
+[data-reveal-fade]{ opacity:0; transition:opacity 1s ease; }
+[data-reveal-fade].in{ opacity:1; }
+
+/* --- image "settle in" reveal --- */
+.reveal-img{ overflow:hidden; }
+.reveal-img img{ transform:scale(1.12); opacity:0; filter:saturate(.8);
+  transition:transform 1.2s cubic-bezier(.2,.7,.2,1), opacity 1s ease, filter 1.2s ease; }
+.reveal-img.in img{ transform:scale(1); opacity:1; filter:saturate(1); }
+
+/* --- line-reveal for big titles --- */
+.line-reveal{ display:inline-block; overflow:hidden; vertical-align:top; }
+.line-reveal > span{ display:inline-block; transform:translateY(110%); opacity:0;
+  transition:transform 1s cubic-bezier(.2,.8,.2,1), opacity 1s ease; }
+.line-reveal.in > span{ transform:translateY(0); opacity:1; }
+
+/* --- custom cursor (desktop only) --- */
+.mcursor, .mcursor-ring{ display:none; }
+@media (pointer:fine) and (hover:hover){
+  body.has-mcursor{ cursor:none; }
+  body.has-mcursor a, body.has-mcursor button, body.has-mcursor input,
+  body.has-mcursor select, body.has-mcursor textarea, body.has-mcursor .card,
+  body.has-mcursor .pcard, body.has-mcursor .chip, body.has-mcursor .thumb{ cursor:none; }
+  .mcursor{ display:block; position:fixed; top:0; left:0; width:8px; height:8px; border-radius:999px;
+    background:var(--ink); pointer-events:none; z-index:100000; transform:translate(-50%,-50%);
+    transition:width .3s ease, height .3s ease, background .3s ease, opacity .3s ease; mix-blend-mode:normal; }
+  .mcursor-ring{ display:block; position:fixed; top:0; left:0; width:34px; height:34px; border-radius:999px;
+    border:1px solid rgba(0,0,0,0.35); pointer-events:none; z-index:99999; transform:translate(-50%,-50%);
+    transition:width .35s cubic-bezier(.2,.7,.2,1), height .35s cubic-bezier(.2,.7,.2,1), border-color .35s, opacity .3s; }
+  body.cursor-hover .mcursor{ width:0; height:0; }
+  body.cursor-hover .mcursor-ring{ width:56px; height:56px; border-color:var(--brass,#9a7b4f); }
+}
+
+/* --- page transition curtain --- */
+.page-curtain{ position:fixed; inset:0; z-index:99998; background:var(--ink); pointer-events:none;
+  transform:translateY(100%); display:flex; align-items:center; justify-content:center; }
+.page-curtain .pc-mark{ color:var(--bg); font-weight:600; font-size:18px; letter-spacing:.1em; opacity:0;
+  transition:opacity .3s ease; }
+.page-curtain .pc-mark span{ font-size:10px; vertical-align:super; }
+.page-curtain.cover{ transform:translateY(0); transition:transform .55s cubic-bezier(.76,0,.24,1); }
+.page-curtain.cover .pc-mark{ opacity:1; transition:opacity .4s ease .2s; }
+
+/* --- magnetic buttons --- */
+.btn{ transition:transform .35s cubic-bezier(.2,.7,.2,1), opacity .25s ease, background .25s, color .25s; will-change:transform; }
+
+/* reduced motion */
+@media (prefers-reduced-motion:reduce){
+  [data-reveal],[data-reveal-fade],.reveal-img img,.line-reveal>span{ transition:none !important; opacity:1 !important; transform:none !important; }
+  .mcursor,.mcursor-ring,.page-curtain{ display:none !important; }
+}

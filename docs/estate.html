@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DOMAINE — Estate</title>
   <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="motion.css" />
 </head>
 <body>
   <main class="wrap" id="main"></main>
   <div class="toast" id="toast"></div>
   <script src="store.js"></script>
+  <script src="motion.js"></script>
   <script>
     DOMAINE.mountChrome("estates");
     const id = new URLSearchParams(location.search).get("id");
