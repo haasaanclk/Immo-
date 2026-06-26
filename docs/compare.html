@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Compare</title>
+  <script>try{var t=JSON.parse(localStorage.getItem("domaine.theme.v1"));document.documentElement.setAttribute("data-theme",t==="nocturne"?"nocturne":"day")}catch(e){document.documentElement.setAttribute("data-theme","day")}</script>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="motion.css" />
+  <style>
+    .cmp-scroll{ overflow-x:auto; padding:2.4em 0 5em; }
+    .cmp-matrix{ display:block; }
+    .cmp-row{ display:grid; align-items:center; border-bottom:1px solid var(--line); }
+    .cmp-row.head{ border-bottom:none; align-items:end; }
+    .cmp-k{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-family:var(--mono); padding:1em 1.2em 1em 0; }
+    .cmp-c{ padding:1em 1.2em; }
+    .cmp-c b{ font-family:var(--mono); }
+    .cmp-best{ color:var(--forest-2); font-weight:600; }
+    .cmp-card{ position:relative; border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--panel); }
+    .cmp-card img{ width:100%; aspect-ratio:16/10; object-fit:cover; }
+    .cmp-card .cc-b{ padding:.9em 1em 1.1em; }
+    .cmp-card .cc-t{ font-size:17px; font-weight:500; }
+    .cmp-card .cc-s{ font-size:12px; color:var(--muted); font-family:var(--mono); margin-top:.2em; }
+    .cmp-rm{ position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:999px; border:none;
+      background:rgba(0,0,0,.55); color:#fff; cursor:pointer; }
+    .cmp-axis{ height:5px; border-radius:999px; background:var(--line); overflow:hidden; }
+    .cmp-axis span{ display:block; height:100%; background:linear-gradient(90deg,var(--forest),var(--brass)); }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="page-head">
+      <p class="eyebrow">Side-by-Side Intelligence</p>
+      <h1 class="page-title">Compare<em>.</em></h1>
+      <p class="page-sub">Seçtiğiniz mülkleri Property DNA, finans ve özellik bazında yan yana okuyun. En güçlü değer yeşille işaretlenir.</p>
+    </section>
+    <div id="body"></div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script src="motion.js"></script>
+  <script>
+    DOMAINE.mountChrome("estates");
+    const D = DOMAINE;
+    const body = document.getElementById("body");
+    function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+    function render(){
+      const ids = D.getCompare();
+      const items = D.getEstates().filter(e => ids.includes(e.id));
+      if (!items.length){
+        body.innerHTML = `<div class="notice" style="margin:3em 0">Karşılaştırma listeniz boş.<br/><br/>
+          <a class="btn" href="estates.html">Portföyden mülk seçin <i>→</i></a></div>`;
+        return;
+      }
+      const dnas = items.map(e => D.computeDNA(e));
+      const cols = `200px repeat(${items.length}, minmax(200px,1fr))`;
+      const cs = `style="grid-template-columns:${cols}"`;
+      const best = (vals, hi=true) => { let bi=0; vals.forEach((v,i)=>{ if(hi? v>vals[bi] : v<vals[bi]) bi=i; }); return bi; };
+
+      const headCards = items.map((e,i) => `
+        <div class="cmp-c"><div class="cmp-card">
+          <button class="cmp-rm" data-rm="${e.id}">✕</button>
+          <a href="estate.html?id=${e.id}"><img src="${e.image}" onerror="this.src='public/image-1.png'"/></a>
+          <div class="cc-b"><div class="cc-t">${e.title}</div><div class="cc-s">${e.category} · ${e.city}</div></div>
+        </div></div>`).join("");
+
+      function row(label, vals, bestIdx){
+        return `<div class="cmp-row" ${cs}><div class="cmp-k">${label}</div>${
+          vals.map((v,i)=>`<div class="cmp-c"><b class="${i===bestIdx?'cmp-best':''}">${v}</b></div>`).join("")}</div>`;
+      }
+      function axisRow(label, key){
+        const vals = dnas.map(d => d.axes[key]);
+        const bi = best(vals);
+        return `<div class="cmp-row" ${cs}><div class="cmp-k">${label}</div>${
+          vals.map((v,i)=>`<div class="cmp-c">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span class="${i===bi?'cmp-best':''}">${v}</span></div>
+            <div class="cmp-axis"><span style="width:${v}%"></span></div></div>`).join("")}</div>`;
+      }
+
+      const prices = items.map(e=>e.price);
+      const m2s = items.map(e=>e.m2);
+      const quals = dnas.map(d=>d.quality);
+      const monthlies = items.map(e => D.finance(e).monthly);
+
+      body.innerHTML = `<div class="cmp-scroll"><div class="cmp-matrix">
+        <div class="cmp-row head" ${cs}><div class="cmp-k"></div>${headCards}</div>
+        ${row("Fiyat", prices.map(D.money), best(prices,false))}
+        ${row("DNA Kalite", quals.map(q=>q+"/100"), best(quals))}
+        ${row("Yaşam alanı", m2s.map(D.area), best(m2s))}
+        ${row("Yatak / Kat", items.map(e=>e.beds+" / "+e.floors), -1)}
+        ${row("İnşa yılı", items.map(e=>e.year||"—"), -1)}
+        ${row("Aylık ödeme (≈)", monthlies.map(D.money), best(monthlies,false))}
+        <div class="cmp-row head" ${cs} style="border-top:1px solid var(--line)"><div class="cmp-k" style="padding-top:1.4em">Property DNA</div>${items.map(()=>'<div class="cmp-c"></div>').join("")}</div>
+        ${axisRow("Mimari","architecture")}
+        ${axisRow("Malzeme","materials")}
+        ${axisRow("Mahremiyet","privacy")}
+        ${axisRow("Lokasyon","location")}
+        ${axisRow("Prestij","prestige")}
+        ${axisRow("Yatırım","investment")}
+      </div></div>
+      <div style="display:flex;gap:.8em;flex-wrap:wrap">
+        <a class="btn btn--ghost" href="estates.html">Daha fazla ekle <i>→</i></a>
+        <button class="btn btn--ghost" id="clearAll">Listeyi temizle</button>
+      </div>`;
+
+      body.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { D.toggleCompare(b.dataset.rm); render(); });
+      const ca = document.getElementById("clearAll"); if (ca) ca.onclick = () => { D.clearCompare(); render(); toast("Liste temizlendi"); };
+    }
+    render();
+  </script>
+</body>
+</html>

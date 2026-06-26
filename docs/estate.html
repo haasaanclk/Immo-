@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DOMAINE — Estate</title>
+  <script>try{var t=JSON.parse(localStorage.getItem("domaine.theme.v1"));document.documentElement.setAttribute("data-theme",t==="nocturne"?"nocturne":"day")}catch(e){document.documentElement.setAttribute("data-theme","day")}</script>
   <link rel="stylesheet" href="app.css" />
   <link rel="stylesheet" href="motion.css" />
 </head>
@@ -88,6 +89,7 @@
           <div style="display:flex; gap:.7em; margin-top:1.4em; flex-wrap:wrap">
             <button class="btn" id="viewBtn">Özel gösterim talep et <i>→</i></button>
             <button class="btn btn--ghost" id="saveBtn">${DOMAINE.isSaved(e.id)?'✦ Koleksiyonda':'✧ Koleksiyona ekle'}</button>
+            <button class="btn btn--ghost" id="cmpBtn">${DOMAINE.inCompare(e.id)?'✓ Karşılaştırmada':'+ Karşılaştır'}</button>
           </div>
         </aside>
       </section>
@@ -209,7 +211,14 @@
       document.getElementById("saveBtn").onclick = (ev) => {
         const on = DOMAINE.toggleSaved(e.id);
         ev.target.textContent = on ? "✦ Koleksiyonda" : "✧ Koleksiyona ekle";
+        DOMAINE.refreshCollectionCount();
         toast(on ? "Koleksiyonunuza eklendi" : "Koleksiyondan çıkarıldı");
+      };
+      document.getElementById("cmpBtn").onclick = (ev) => {
+        const r = DOMAINE.toggleCompare(e.id);
+        if (r.full) { toast("En fazla 3 mülk karşılaştırılabilir."); return; }
+        ev.target.textContent = r.on ? "✓ Karşılaştırmada" : "+ Karşılaştır";
+        if (r.on) toast("Karşılaştırmaya eklendi — Compare sayfasında görün.");
       };
       document.getElementById("viewBtn").onclick = () => toast("Özel gösterim talebiniz concierge ekibine iletildi.");
     }

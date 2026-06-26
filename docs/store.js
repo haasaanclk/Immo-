@@ -309,44 +309,199 @@
     return `${p(h)}:${p(m)}:${p(ss)}`;
   }
 
+  /* ---------- Nocturne theme engine ---------- */
+  const LS_THEME = "domaine.theme.v1";
+  function getTheme() { const t = readLS(LS_THEME, null); return t === "nocturne" ? "nocturne" : "day"; }
+  function applyTheme(t) {
+    const theme = t === "nocturne" ? "nocturne" : "day";
+    document.documentElement.setAttribute("data-theme", theme);
+    document.querySelectorAll("[data-theme-state]").forEach((el) => (el.dataset.themeState = theme));
+  }
+  function setTheme(t) { writeLS(LS_THEME, t); applyTheme(t); }
+  function toggleTheme() { setTheme(getTheme() === "nocturne" ? "day" : "nocturne"); return getTheme(); }
+
+  /* ---------- Live Market Pulse (deterministic, drifts each minute) ----------
+     The static analog of a real-time market data feed. Numbers wobble around a
+     stable base so the rail feels alive without a backend. */
+  function marketPulse() {
+    const t = Math.floor(Date.now() / 60000);                 // changes each minute
+    const d = (salt) => (seeded("pulse-" + salt, t) - 0.5) * 2; // -1..1
+    const mk = (k, base, span, dunit) => {
+      const delta = +(d(k) * 1.4).toFixed(2);
+      return { k, v: base, d: delta, dir: delta >= 0 ? "up" : "down" };
+    };
+    return [
+      { k: "DOMAINE Prime", v: (182.4 + d("prime") * 2.6).toFixed(1), d: +(d("prime") * 0.9).toFixed(2), dir: d("prime") >= 0 ? "up" : "down" },
+      { k: "Zürich €/m²", v: Math.round(28400 + d("zh") * 320).toLocaleString("de-DE"), d: +(d("zh") * 0.7).toFixed(2), dir: d("zh") >= 0 ? "up" : "down" },
+      { k: "London €/m²", v: Math.round(31900 + d("ln") * 360).toLocaleString("de-DE"), d: +(d("ln") * 0.6).toFixed(2), dir: d("ln") >= 0 ? "up" : "down" },
+      { k: "Off-Market Vol.", v: (12 + Math.round(d("vol") * 3)) + " est.", d: +(d("vol") * 1.1).toFixed(2), dir: d("vol") >= 0 ? "up" : "down" },
+      { k: "Privé Demand", v: (78 + Math.round(d("dem") * 6)) + " idx", d: +(d("dem") * 1.3).toFixed(2), dir: d("dem") >= 0 ? "up" : "down" },
+      { k: "Avg. DNA Quality", v: (74 + Math.round(d("dna") * 2)), d: +(d("dna") * 0.4).toFixed(2), dir: d("dna") >= 0 ? "up" : "down" },
+    ];
+  }
+
+  /* ---------- Compare tray (max 3) ---------- */
+  const LS_COMPARE = "domaine.compare.v1";
+  function getCompare() { return readLS(LS_COMPARE, []); }
+  function inCompare(id) { return getCompare().includes(id); }
+  function toggleCompare(id) {
+    const c = getCompare(); const i = c.indexOf(id);
+    if (i >= 0) { c.splice(i, 1); writeLS(LS_COMPARE, c); return { on: false, full: false, list: c }; }
+    if (c.length >= 3) return { on: false, full: true, list: c };
+    c.push(id); writeLS(LS_COMPARE, c); return { on: true, full: false, list: c };
+  }
+  function clearCompare() { writeLS(LS_COMPARE, []); }
+
+  /* ---------- Universal search index (powers the ⌘K palette) ---------- */
+  function searchAll(query) {
+    const q = (query || "").trim().toLowerCase();
+    const pages = NAV.concat([{ href: "dashboard.html", label: "Dashboard", key: "dashboard" }])
+      .map((n) => ({ type: "page", label: n.label, sub: "Page", href: n.href }));
+    const cats = CATEGORIES.map((c) => ({ type: "category", label: c, sub: "Category · " + countFor(c) + " estates", href: "estates.html?cat=" + encodeURIComponent(c) }));
+    const estates = getEstates().map((e) => ({ type: "estate", label: e.title, sub: e.category + " · " + e.city + " · " + money(e.price), href: "estate.html?id=" + e.id }));
+    const all = [...estates, ...cats, ...pages];
+    if (!q) return [...pages, ...cats.slice(0, 4), ...estates.slice(0, 4)];
+    const hit = (s) => (s || "").toLowerCase().includes(q);
+    return all.filter((r) => hit(r.label) || hit(r.sub)).slice(0, 24);
+  }
+  function countFor(cat) { return getEstates().filter((e) => e.category === cat).length; }
+
   /* ---------- shared chrome ---------- */
   const NAV = [
     { href: "index.html", label: "Archive", key: "archive" },
     { href: "estates.html", label: "Estates", key: "estates" },
+    { href: "atlas.html", label: "Atlas", key: "atlas" },
     { href: "concierge.html", label: "Concierge", key: "concierge" },
     { href: "private.html", label: "Private", key: "private" },
     { href: "publish.html", label: "Publish", key: "publish" },
   ];
+  const ICON_SEARCH = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.2-4.2"/></svg>`;
+
   function renderHeader(activeKey) {
     const nav = NAV.map((n) => `<a href="${n.href}" class="${n.key === activeKey ? "is-active" : ""}">${n.label}</a>`).join("");
+    const saved = getSaved().length;
     return `
     <header class="site-header site-header--solid">
       <div class="header-left">
         <a class="brand" href="index.html">DOMAINE<span class="brand-dot">®</span></a>
         <nav class="nav">${nav}</nav>
       </div>
-      <div class="lang"><span>EN</span><span class="sep">/</span><span class="muted">DE</span></div>
-      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Menu"><span></span><span></span></button>
+      <div class="header-right">
+        <button class="hbtn search-trigger" id="searchTrigger" type="button" aria-label="Search">${ICON_SEARCH}<span class="hbtn-t">Search</span><kbd>⌘K</kbd></button>
+        <a class="hbtn collection-pill" href="dashboard.html" aria-label="Your collection"><span class="cp-star">✦</span><span class="cp-n" id="collectionCount">${saved}</span></a>
+        <button class="hbtn theme-toggle" id="themeToggle" type="button" aria-label="Toggle Nocturne"><span class="tt-icon tt-day">☼</span><span class="tt-icon tt-night">☾</span></button>
+        <div class="lang"><span>EN</span><span class="sep">/</span><span class="muted">DE</span></div>
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="Menu"><span></span><span></span></button>
+      </div>
     </header>
-    <nav class="mobile-nav" id="mobileNav">${NAV.map((n)=>`<a href="${n.href}">${n.label}</a>`).join("")}</nav>`;
+    <nav class="mobile-nav" id="mobileNav">${NAV.map((n) => `<a href="${n.href}">${n.label}</a>`).join("")}<a href="dashboard.html">Dashboard</a></nav>`;
   }
+
+  function renderPulseBar() {
+    const row = marketPulse().map((m) =>
+      `<span class="pulse-item"><i>${m.k}</i><b>${m.v}</b><em class="${m.dir}">${m.dir === "up" ? "▲" : "▼"} ${Math.abs(m.d)}%</em></span>`).join("");
+    return `<div class="pulse-bar" id="pulseBar" aria-hidden="true">
+      <span class="pulse-live"><span class="pdot"></span>LIVE</span>
+      <div class="pulse-track"><div class="pulse-run" id="pulseRun">${row}${row}</div></div>
+    </div>`;
+  }
+
   function renderFooter() {
     return `
     <footer class="site-footer">
       <div class="foot-grid">
         <div><div class="brand">DOMAINE<span class="brand-dot">®</span></div>
-          <p class="foot-tag">Zamanını koru. Mahremiyetini koru. Sana özel olanı gör.</p></div>
-        <div><h4>Piyasalar</h4><p>München · Zürich · Wien · Genève · London · Dubai</p></div>
-        <div><h4>İletişim</h4><p>concierge@domaine.estate</p><p>Davet ile üyelik</p></div>
+          <p class="foot-tag">Zamanını koru. Mahremiyetini koru. Sana özel olanı gör. Prestiji kanıtla.</p>
+          <div class="foot-pulse" id="footPulse"></div></div>
+        <div><h4>Navigasyon</h4>${NAV.map((n) => `<p><a href="${n.href}">${n.label}</a></p>`).join("")}<p><a href="dashboard.html">Dashboard</a></p></div>
+        <div><h4>Piyasalar</h4><p>München · Zürich · Wien</p><p>Genève · London · Dubai · Monaco</p></div>
+        <div><h4>İletişim</h4><p>concierge@domaine.estate</p><p>Davet ile üyelik</p><p class="muted">Press ⌘K to search</p></div>
       </div>
-      <div class="foot-base"><span>© 2026 DOMAINE® — Private AI Real Estate Concierge</span><span>EN / DE</span></div>
+      <div class="foot-base"><span>© 2026 DOMAINE® — Private AI Real Estate Concierge</span><span>Built for the few · EN / DE</span></div>
     </footer>`;
   }
+
+  function renderPalette() {
+    return `<div class="cmdk" id="cmdk" hidden>
+      <div class="cmdk-scrim" data-cmdk-close></div>
+      <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="Search DOMAINE">
+        <div class="cmdk-input">${ICON_SEARCH}<input id="cmdkInput" type="text" placeholder="Search estates, categories, pages…" autocomplete="off" spellcheck="false"/><kbd>esc</kbd></div>
+        <div class="cmdk-results" id="cmdkResults"></div>
+        <div class="cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd> navigate</span><span><kbd>↵</kbd> open</span><span><kbd>esc</kbd> close</span></div>
+      </div>
+    </div>`;
+  }
+
+  /* ---------- palette + theme + search wiring (idempotent) ---------- */
+  function initOverlays() {
+    applyTheme(getTheme());
+    if (!document.getElementById("cmdk")) document.body.insertAdjacentHTML("beforeend", renderPalette());
+    const cmdk = document.getElementById("cmdk");
+    const input = document.getElementById("cmdkInput");
+    const results = document.getElementById("cmdkResults");
+    let cursor = 0, rows = [];
+
+    function paint() {
+      rows = searchAll(input.value);
+      if (!rows.length) { results.innerHTML = `<div class="cmdk-empty">No matches for “${input.value}”.</div>`; return; }
+      cursor = Math.min(cursor, rows.length - 1);
+      const ico = { estate: "✦", category: "◷", page: "→" };
+      results.innerHTML = rows.map((r, i) =>
+        `<a class="cmdk-row ${i === cursor ? "on" : ""}" href="${r.href}" data-i="${i}">
+          <span class="cmdk-ico">${ico[r.type] || "·"}</span>
+          <span class="cmdk-label">${r.label}</span>
+          <span class="cmdk-sub">${r.sub || ""}</span></a>`).join("");
+      results.querySelectorAll(".cmdk-row").forEach((el) => {
+        el.addEventListener("mousemove", () => { cursor = +el.dataset.i; mark(); });
+      });
+    }
+    function mark() { results.querySelectorAll(".cmdk-row").forEach((el, i) => el.classList.toggle("on", i === cursor)); }
+    function open() { if (!cmdk.hidden) return; cmdk.hidden = false; document.body.classList.add("cmdk-open"); input.value = ""; cursor = 0; paint(); requestAnimationFrame(() => input.focus()); }
+    function close() { cmdk.hidden = true; document.body.classList.remove("cmdk-open"); }
+    function go() { const r = rows[cursor]; if (r) location.href = r.href; }
+
+    if (!cmdk.dataset.wired) {
+      cmdk.dataset.wired = "1";
+      input.addEventListener("input", () => { cursor = 0; paint(); });
+      cmdk.querySelectorAll("[data-cmdk-close]").forEach((el) => el.addEventListener("click", close));
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown") { e.preventDefault(); cursor = Math.min(cursor + 1, rows.length - 1); mark(); scrollRow(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); cursor = Math.max(cursor - 1, 0); mark(); scrollRow(); }
+        else if (e.key === "Enter") { e.preventDefault(); go(); }
+        else if (e.key === "Escape") { e.preventDefault(); close(); }
+      });
+      function scrollRow() { const el = results.querySelector(".cmdk-row.on"); if (el) el.scrollIntoView({ block: "nearest" }); }
+      document.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); cmdk.hidden ? open() : close(); }
+        else if (e.key === "/" && cmdk.hidden && !/INPUT|TEXTAREA|SELECT/.test((e.target.tagName || ""))) { e.preventDefault(); open(); }
+      });
+    }
+    document.querySelectorAll("#searchTrigger,[data-search-open]").forEach((b) => {
+      if (b.dataset.wired) return; b.dataset.wired = "1"; b.addEventListener("click", open);
+    });
+    const tt = document.getElementById("themeToggle");
+    if (tt && !tt.dataset.wired) { tt.dataset.wired = "1"; tt.addEventListener("click", () => toggleTheme()); }
+    return { open, close };
+  }
+
+  function refreshCollectionCount() {
+    const el = document.getElementById("collectionCount"); if (el) el.textContent = getSaved().length;
+  }
+
   function mountChrome(activeKey) {
+    applyTheme(getTheme());
     document.body.insertAdjacentHTML("afterbegin", renderHeader(activeKey));
+    const hdr = document.querySelector(".site-header");
+    if (hdr) hdr.insertAdjacentHTML("afterend", renderPulseBar());
     document.body.insertAdjacentHTML("beforeend", renderFooter());
+    // footer mini-pulse
+    const fp = document.getElementById("footPulse");
+    if (fp) fp.innerHTML = marketPulse().slice(0, 3).map((m) => `<span><i>${m.k}</i> <b>${m.v}</b> <em class="${m.dir}">${m.dir === "up" ? "▲" : "▼"}${Math.abs(m.d)}%</em></span>`).join("");
     const t = document.getElementById("menuToggle"), m = document.getElementById("mobileNav");
     if (t && m) t.addEventListener("click", () => m.classList.toggle("open"));
+    initOverlays();
+    refreshCollectionCount();
+    window.addEventListener("pageshow", refreshCollectionCount);
   }
 
   global.DOMAINE = {
@@ -357,6 +512,10 @@
     profileVector, embeddingOf, cosine, DIMS,
     finance, ATELIER_STYLES, atelier,
     anonId, blindMatch, firstAccess, fmtCountdown, OFF_MARKET,
-    renderHeader, renderFooter, mountChrome,
+    getTheme, setTheme, toggleTheme, applyTheme,
+    marketPulse, getCompare, inCompare, toggleCompare, clearCompare,
+    searchAll, countFor, NAV,
+    renderHeader, renderFooter, renderPulseBar, renderPalette,
+    initOverlays, refreshCollectionCount, mountChrome,
   };
 })(window);

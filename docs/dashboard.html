@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Your DOMAINE</title>
+  <script>try{var t=JSON.parse(localStorage.getItem("domaine.theme.v1"));document.documentElement.setAttribute("data-theme",t==="nocturne"?"nocturne":"day")}catch(e){document.documentElement.setAttribute("data-theme","day")}</script>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="motion.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="page-head">
+      <p class="eyebrow">Personal Intelligence — Sizin DOMAINE'iniz</p>
+      <h1 class="page-title">Your <em>DOMAINE.</em></h1>
+      <p class="page-sub">Yaşam DNA'nız, koleksiyonunuz ve canlı portföyle eşleşmeniz — tek panelde, sizin için hesaplanmış.</p>
+    </section>
+
+    <div class="dash-stats" id="stats"></div>
+
+    <div class="dash-grid">
+      <section class="panel" id="profilePanel"></section>
+      <section class="panel" id="matchPanel"></section>
+    </div>
+
+    <div class="dash-grid">
+      <section class="panel" id="collectionPanel"></section>
+      <section class="panel" id="pulsePanel"></section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script src="motion.js"></script>
+  <script>
+    DOMAINE.mountChrome("dashboard");
+    const D = DOMAINE;
+    function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+    const profile = D.getProfile();
+    const savedIds = D.getSaved();
+    const saved = D.getEstates().filter(e => savedIds.includes(e.id));
+    const matches = profile ? D.matchEstates(profile, 4) : [];
+    const offCount = D.getEstates().filter(e => D.OFF_MARKET.has(e.id)).length;
+    const avgDna = saved.length ? Math.round(saved.reduce((s,e)=>s+D.computeDNA(e).quality,0)/saved.length)
+                  : Math.round(D.getEstates().reduce((s,e)=>s+D.computeDNA(e).quality,0)/D.getEstates().length);
+
+    /* ---- stats ---- */
+    document.getElementById("stats").innerHTML = `
+      <div class="stat"><b data-count="${saved.length}">0</b><span>Koleksiyon</span></div>
+      <div class="stat"><b data-count="${profile ? matches.length ? matches[0].match : 0 : 0}" data-count-suffix="%">0</b><span>En iyi uyum</span></div>
+      <div class="stat"><b data-count="${avgDna}">0</b><span>Ortalama DNA</span></div>`;
+
+    /* ---- lifestyle profile ---- */
+    const pp = document.getElementById("profilePanel");
+    if (profile) {
+      const axes = Object.keys(D.AXIS_LABELS).map(k =>
+        `<div class="axis"><div class="axis-top"><span>${D.AXIS_LABELS[k]}</span><b>${profile[k]}</b></div>
+         <div class="axis-bar"><span class="axis-fill" data-v="${profile[k]}"></span></div></div>`).join("");
+      pp.innerHTML = `<div class="panel-h"><h3>Yaşam DNA'nız</h3><a href="concierge.html">Yenile →</a></div>
+        <p class="muted" style="font-size:13px;margin:-.6em 0 1.2em">Concierge görüşmenizden çıkarılan 6 boyutlu yaşam vektörü.</p>
+        <div class="dna-axes">${axes}</div>`;
+      requestAnimationFrame(()=> pp.querySelectorAll(".axis-fill").forEach(f => f.style.right = (100 - f.dataset.v) + "%"));
+    } else {
+      pp.innerHTML = `<div class="panel-h"><h3>Yaşam DNA'nız</h3></div>
+        <div class="dash-empty">Henüz bir profiliniz yok.<br/><br/><a class="btn" href="concierge.html">Concierge görüşmesini başlat <i>→</i></a></div>`;
+    }
+
+    /* ---- matches ---- */
+    const mp = document.getElementById("matchPanel");
+    if (profile && matches.length) {
+      mp.innerHTML = `<div class="panel-h"><h3>Sizin için seçildi</h3><a href="estates.html">Tümü →</a></div>
+        <div class="mini-list">${matches.map(m => { const e=m.estate; return `
+          <a class="mini-row" href="estate.html?id=${e.id}">
+            <img src="${e.image}" onerror="this.src='public/image-1.png'"/>
+            <div><div class="mr-t">${e.title}</div><div class="mr-s">${e.category} · ${e.city}</div></div>
+            <div class="mr-x match-pct">%${m.match}</div>
+          </a>`; }).join("")}</div>`;
+    } else {
+      mp.innerHTML = `<div class="panel-h"><h3>Sizin için seçildi</h3></div>
+        <div class="dash-empty">Eşleştirme için önce concierge görüşmesini tamamlayın.</div>`;
+    }
+
+    /* ---- collection ---- */
+    const cp = document.getElementById("collectionPanel");
+    function renderCollection(){
+      const ids = D.getSaved();
+      const list = D.getEstates().filter(e => ids.includes(e.id));
+      if (!list.length){
+        cp.innerHTML = `<div class="panel-h"><h3>Koleksiyonunuz</h3></div>
+          <div class="dash-empty">Henüz mülk kaydetmediniz.<br/><br/><a class="btn btn--ghost" href="estates.html">Portföyü keşfet <i>→</i></a></div>`;
+        return;
+      }
+      cp.innerHTML = `<div class="panel-h"><h3>Koleksiyonunuz</h3><span class="muted mono">${list.length} mülk</span></div>
+        <div class="mini-list">${list.map(e => `
+          <div class="mini-row">
+            <img src="${e.image}" onerror="this.src='public/image-1.png'"/>
+            <a href="estate.html?id=${e.id}" style="display:block"><div class="mr-t">${e.title}</div><div class="mr-s">${e.category} · ${D.money(e.price)}</div></a>
+            <button class="chip" data-rm="${e.id}" style="font-size:12px;padding:.4em .8em">Çıkar</button>
+          </div>`).join("")}</div>`;
+      cp.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => {
+        D.toggleSaved(b.dataset.rm); D.refreshCollectionCount(); renderCollection(); toast("Koleksiyondan çıkarıldı");
+      });
+    }
+    renderCollection();
+
+    /* ---- market pulse ---- */
+    document.getElementById("pulsePanel").innerHTML = `
+      <div class="panel-h"><h3>Market Pulse</h3><span class="muted mono">live</span></div>
+      <div class="mini-list">${D.marketPulse().map(m => `
+        <div class="mini-row" style="grid-template-columns:1fr auto">
+          <div class="mr-t" style="font-size:14px">${m.k}</div>
+          <div class="mr-x"><b>${m.v}</b> <em class="${m.dir}" style="font-family:var(--mono)">${m.dir==='up'?'▲':'▼'} ${Math.abs(m.d)}%</em></div>
+        </div>`).join("")}</div>`;
+  </script>
+</body>
+</html>
