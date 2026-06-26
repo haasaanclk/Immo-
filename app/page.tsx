@@ -3,6 +3,7 @@ import { TopBar } from "@/components/sections/TopBar";
 import { getCurrentUser } from "@/lib/current-user";
 import { tierInfo } from "@/lib/membership";
 import { Tiers, Palette, FeatureStrip } from "@/components/sections/Tiers";
+import { Manifesto } from "@/components/sections/Manifesto";
 import { SectionHead } from "@/components/ui/primitives";
 import { Gallery, GalleryItem } from "@/components/ui/Gallery";
 import { ConciergeLive } from "@/components/screens/ConciergeLive";
@@ -138,6 +139,9 @@ export default async function Home() {
           </Gallery>
         </div>
       </section>
+
+      {/* Cinematic brand-philosophy interstitial */}
+      <Manifesto />
 
       {/* 04 — ATELIER / INTERIOR DESIGNER */}
       <section id="atelier" className="bg-ivory-2 py-24">
