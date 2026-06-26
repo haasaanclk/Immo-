@@ -48,9 +48,9 @@
          <div class="axis-bar"><span class="axis-fill" data-v="${profile[k]}"></span></div></div>`).join("");
       root.innerHTML = `
         <div class="cq-progress"><span style="width:100%"></span></div>
-        <p class="cq-step">Yaşam Profiliniz</p>
+        <p class="cq-step">Lifestyle Vector — cosine similarity</p>
         <h1 class="cq-q">Sizin için <em>seçildi.</em></h1>
-        <p class="page-sub">Profiliniz portföye karşı puanlandı. Önce şunları görmenizi öneriyoruz.</p>
+        <p class="page-sub">Yaşam tarzınız 6 boyutlu bir <em>vektör embedding</em>'e dönüştürüldü; portföy bu vektöre kosinüs benzerliğiyle sıralandı (Pinecone tarzı bir ANN sorgusunun statik karşılığı).</p>
         <div class="cq-result-axes">${axes}</div>
         <div class="grid" style="padding-top:0">
           ${matches.map(m => {

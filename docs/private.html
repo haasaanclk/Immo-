@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — First Access</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="page-head">
+      <p class="eyebrow">First Access Pipeline — Privé+ / Cercle Noir</p>
+      <h1 class="page-title">The <em>Private Market.</em></h1>
+      <p class="page-sub">Herkese açık ilan yok. Off-market portföy yalnızca davetli katmanlara, <strong>48 saatlik</strong> zaman kısıtlı (TTL) bir <em>Private Preview</em> penceresiyle açılır. Pencere kapanınca mülk genel listeye düşer.</p>
+    </section>
+
+    <div class="private-grid" id="privateGrid"></div>
+
+    <section class="module" style="border-top:1px solid var(--line); margin-top:1em">
+      <div class="module-head"><p class="eyebrow">Tiered Access</p><h2 class="module-title">Erişim <em>katmanları.</em></h2></div>
+      <div class="tiers">
+        <div class="tier"><h3>Résident</h3><p class="muted">Genel portföy, concierge eşleştirme, Property DNA.</p></div>
+        <div class="tier"><h3>Privé</h3><p class="muted">Off-market First Access, Invisible Buyer, finans zekâsı, Atelier.</p></div>
+        <div class="tier"><h3>Cercle Noir</h3><p class="muted">Davet ile. Tokenized priority, 48s erken erişim, özel concierge.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script>
+    DOMAINE.mountChrome("private");
+    const grid = document.getElementById("privateGrid");
+    function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+    const offs = DOMAINE.getEstates().filter(e => DOMAINE.OFF_MARKET.has(e.id));
+    if (!offs.length) { grid.innerHTML = `<div class="notice">Şu an açık bir Private Preview penceresi yok.</div>`; }
+
+    grid.innerHTML = offs.map(e => {
+      const dna = DOMAINE.computeDNA(e);
+      return `<article class="pcard" data-id="${e.id}">
+        <div class="pcard-media"><img src="${e.image}" onerror="this.src='public/image-1.png'"/>
+          <span class="pcard-flag">● OFF-MARKET</span></div>
+        <div class="pcard-body">
+          <div class="pcard-top"><span class="card-cat">${e.category} · ${e.city}</span><span class="pcard-dna">DNA ${dna.quality}</span></div>
+          <h3 class="card-title">${e.title}</h3>
+          <div class="pcard-meta">
+            <div class="ttl"><span class="muted">Private Preview kapanışına</span><b data-ttl="${e.id}">--:--:--</b></div>
+            <div class="scarcity"><span class="dot"></span><b data-view="${e.id}">0</b> kişi şu an inceliyor</div>
+          </div>
+          <div class="pcard-price">${DOMAINE.money(e.price)}</div>
+        </div>
+      </article>`;
+    }).join("");
+
+    grid.querySelectorAll(".pcard").forEach(c => c.onclick = () => location.href = "estate.html?id=" + c.dataset.id);
+
+    function tick() {
+      offs.forEach(e => {
+        const fa = DOMAINE.firstAccess(e);
+        const t = grid.querySelector(`[data-ttl="${e.id}"]`); if (t) t.textContent = DOMAINE.fmtCountdown(fa.remainingMs);
+        const v = grid.querySelector(`[data-view="${e.id}"]`); if (v) v.textContent = fa.viewers;
+      });
+    }
+    tick(); setInterval(tick, 1000);
+  </script>
+</body>
+</html>

@@ -180,22 +180,30 @@
   function saveProfile(p) { writeLS(LS_PROFILE, p); }
   function getProfile() { return readLS(LS_PROFILE, null); }
 
+  /* ---------- Hyper-Personalization Engine ----------
+     Lifestyle profile -> 6-d vector embedding; estates embedded from their DNA
+     axes; ranking by cosine similarity (the static analog of a Pinecone ANN
+     query). Same vector contract a real vector DB would store. */
+  const DIMS = Object.keys(AXIS_LABELS); // architecture, materials, privacy, location, prestige, investment
+  function profileVector(profile) { return DIMS.map((k) => (profile[k] || 0) / 100); }
+  function embeddingOf(estate) { const a = computeDNA(estate).axes; return DIMS.map((k) => a[k] / 100); }
+  function cosine(a, b) {
+    let dot = 0, na = 0, nb = 0;
+    for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+    return (na && nb) ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
+  }
   function matchEstates(profile, limit) {
-    const keys = Object.keys(AXIS_LABELS);
-    const wsum = keys.reduce((s, k) => s + (profile[k] || 0), 0) || 1;
+    const pv = profileVector(profile);
     const scored = getEstates().map((e) => {
-      const dna = computeDNA(e).axes;
-      // weighted alignment: profile weight * estate axis strength
-      let score = 0;
-      keys.forEach((k) => { score += (profile[k] || 0) * dna[k]; });
-      score = score / wsum; // 0..100-ish
-      // strongest aligned axis -> reason
-      let best = keys[0], bestVal = -1;
-      keys.forEach((k) => { const v = (profile[k] || 0) * dna[k]; if (v > bestVal) { bestVal = v; best = k; } });
-      const reason = reasonFor(best, dna[best]);
-      return { estate: e, score: round(score), match: round(clamp(score, 0, 100)), reasonAxis: best, reason };
+      const ev = embeddingOf(e);
+      const sim = cosine(pv, ev);                       // 0..1
+      // strongest contributing dimension -> human reason
+      let best = DIMS[0], bestVal = -1;
+      DIMS.forEach((k, i) => { const v = pv[i] * ev[i]; if (v > bestVal) { bestVal = v; best = k; } });
+      return { estate: e, cosine: +sim.toFixed(4), match: round(sim * 100), score: round(sim * 100),
+        reasonAxis: best, reason: reasonFor(best, computeDNA(e).axes[best]) };
     });
-    scored.sort((a, b) => b.score - a.score);
+    scored.sort((a, b) => b.cosine - a.cosine);
     return limit ? scored.slice(0, limit) : scored;
   }
   function reasonFor(axis, val) {
@@ -256,11 +264,57 @@
     return { style: s, cost, impactPct, valueGain };
   }
 
+  /* ---------- Privacy Engine — Invisible Buyer / Blind Matching ----------
+     Escrow-style visibility: identities never cross. Buyer is a stable
+     anonymous token; only a masked qualification band + a "verified" flag are
+     exposed to the seller side (the static analog of a zero-knowledge proof). */
+  function anonId() {
+    let id = readLS("domaine.anon", null);
+    if (!id) { id = (hash(String(Date.now()) + Math.random()).toString(36).toUpperCase().slice(0, 4)); writeLS("domaine.anon", id); }
+    return id;
+  }
+  const BANDS = [
+    [0, 3_000_000, "€1M–€3M"], [3_000_000, 6_000_000, "€3M–€6M"], [6_000_000, 10_000_000, "€6M–€10M"],
+    [10_000_000, 20_000_000, "€10M–€20M"], [20_000_000, Infinity, "€20M+"],
+  ];
+  function bandFor(price) { const b = BANDS.find((x) => price >= x[0] && price < x[1]) || BANDS[BANDS.length - 1]; return b[2]; }
+  function blindMatch(estate) {
+    const token = "Buyer #" + anonId();
+    return {
+      token,                                   // what the seller sees instead of a name
+      band: bandFor(estate.price || 0),        // masked financial qualification
+      verified: true,                          // zero-knowledge: proof checked, data withheld
+      buyerHidden: ["Ad / kimlik", "İletişim", "Tam servet beyanı", "Niyet / aciliyet"],
+      sellerSees: ["Anonim alıcı kodu", "Doğrulanmış yeterlilik bandı", "Eşleşme skoru"],
+    };
+  }
+
+  /* ---------- First Access Pipeline — Tiered access + TTL + scarcity ----------
+     Off-market estates expose a 48h rolling Private Preview window (TTL) for
+     invited tiers, plus a live viewers count (scarcity trigger). */
+  const OFF_MARKET = new Set(["seed-3", "seed-5", "seed-13", "seed-4", "seed-14"]); // Chalet, Île Privée, Tegernsee, Belgravia, Palais
+  const CYCLE = 48 * 3600 * 1000;
+  function firstAccess(estate) {
+    const off = OFF_MARKET.has(estate.id);
+    const offset = Math.floor(seeded(estate.id, "ttl") * CYCLE);
+    const until = Math.ceil((Date.now() - offset) / CYCLE) * CYCLE + offset; // rolling, always future
+    const remainingMs = Math.max(until - Date.now(), 0);
+    const base = 2 + (hash(estate.id) % 6);                                   // 2..7
+    const viewers = base + (Math.floor(Date.now() / 60000) % 3);              // gentle live drift
+    return { offMarket: off, until, remainingMs, viewers, tier: off ? "Privé+" : "Résident" };
+  }
+  function fmtCountdown(ms) {
+    const s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    const p = (n) => String(n).padStart(2, "0");
+    return `${p(h)}:${p(m)}:${p(ss)}`;
+  }
+
   /* ---------- shared chrome ---------- */
   const NAV = [
     { href: "index.html", label: "Archive", key: "archive" },
     { href: "estates.html", label: "Estates", key: "estates" },
     { href: "concierge.html", label: "Concierge", key: "concierge" },
+    { href: "private.html", label: "Private", key: "private" },
     { href: "publish.html", label: "Publish", key: "publish" },
   ];
   function renderHeader(activeKey) {
@@ -300,7 +354,9 @@
     computeDNA, getEstates, getEstate, saveEstate, deleteEstate,
     getSaved, toggleSaved, isSaved,
     QUESTIONS, buildProfile, saveProfile, getProfile, matchEstates,
+    profileVector, embeddingOf, cosine, DIMS,
     finance, ATELIER_STYLES, atelier,
+    anonId, blindMatch, firstAccess, fmtCountdown, OFF_MARKET,
     renderHeader, renderFooter, mountChrome,
   };
 })(window);

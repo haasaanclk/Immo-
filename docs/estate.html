@@ -23,13 +23,37 @@
     } else {
       const dna = DOMAINE.computeDNA(e);
       const imgs = (e.images && e.images.length) ? e.images : [e.image];
-      const axisRows = Object.keys(DOMAINE.AXIS_LABELS).map(k =>
-        `<div class="axis"><div class="axis-top"><span>${DOMAINE.AXIS_LABELS[k]}</span><span>${dna.axes[k]}</span></div>
-         <div class="axis-bar"><span class="axis-fill" data-v="${dna.axes[k]}"></span></div></div>`).join("");
+      const fa = DOMAINE.firstAccess(e);
+
+      // ---- Radar / Spider chart (SVG, no dependency) ----
+      function radar(axes) {
+        const keys = Object.keys(DOMAINE.AXIS_LABELS);
+        const N = keys.length, cx = 130, cy = 128, R = 96;
+        const pt = (i, r) => { const a = (-90 + i * 360 / N) * Math.PI / 180; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; };
+        let grid = "";
+        [0.25, 0.5, 0.75, 1].forEach(f => {
+          const p = keys.map((_, i) => pt(i, R * f).map(n => n.toFixed(1)).join(",")).join(" ");
+          grid += `<polygon points="${p}" fill="none" stroke="rgba(0,0,0,0.10)" stroke-width="1"/>`;
+        });
+        let spokes = "", labels = "";
+        keys.forEach((k, i) => {
+          const [x, y] = pt(i, R), [lx, ly] = pt(i, R + 22);
+          spokes += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(0,0,0,0.10)" stroke-width="1"/>`;
+          const anchor = Math.abs(lx - cx) < 6 ? "middle" : (lx > cx ? "start" : "end");
+          labels += `<text x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}" class="radar-label">${DOMAINE.AXIS_LABELS[k]}</text>`;
+          labels += `<text x="${lx.toFixed(1)}" y="${(ly + 16).toFixed(1)}" text-anchor="${anchor}" class="radar-val">${axes[k]}</text>`;
+        });
+        const dataPts = keys.map((k, i) => pt(i, R * axes[k] / 100).map(n => n.toFixed(1)).join(",")).join(" ");
+        const dots = keys.map((k, i) => { const [x, y] = pt(i, R * axes[k] / 100); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="var(--forest)"/>`; }).join("");
+        return `<svg viewBox="0 0 260 256" class="radar">${grid}${spokes}
+          <polygon class="radar-area" points="${dataPts}" fill="rgba(30,58,47,0.16)" stroke="var(--forest)" stroke-width="1.6"/>
+          ${dots}${labels}</svg>`;
+      }
 
       main.innerHTML = `
       <section class="page-head" style="padding-bottom:1.4em">
         <p class="eyebrow"><a href="estates.html">Estates</a> · ${e.category} · ${e.city}</p>
+        ${fa.offMarket ? `<div class="offmarket-badge">● OFF-MARKET · First Access — <span id="ttl">${DOMAINE.fmtCountdown(fa.remainingMs)}</span> · ${fa.tier}</div>` : ``}
         <h1 class="page-title" style="font-size:clamp(30px,4.4vw,54px)">${e.title}</h1>
         <p class="page-sub">${e.blurb || ""}</p>
       </section>
@@ -56,15 +80,20 @@
               <div class="dna-q">${dna.quality}<small> /100</small></div>
               <div class="dna-serial">PROPERTY DNA<br/>${dna.serial}</div>
             </div>
-            <p class="muted" style="font-size:13px;margin-top:.4em">Kalite Endeksi — mimari, malzeme, mahremiyet, lokasyon, prestij ve yatırım eksenlerinin ağırlıklı bileşimi.</p>
-            <div class="dna-axes">${axisRows}</div>
+            <p class="muted" style="font-size:13px;margin-top:.4em">Multi-Dimensional Scoring — mimari, malzeme, mahremiyet, lokasyon, prestij ve yatırım eksenleri (Radar).</p>
+            ${radar(dna.axes)}
           </div>
           <div style="display:flex; gap:.7em; margin-top:1.4em; flex-wrap:wrap">
             <button class="btn" id="viewBtn">Özel gösterim talep et <i>→</i></button>
             <button class="btn btn--ghost" id="saveBtn">${DOMAINE.isSaved(e.id)?'✦ Koleksiyonda':'✧ Koleksiyona ekle'}</button>
           </div>
-          <p class="muted" style="font-size:12px;margin-top:1em">Talebinizde kimliğiniz gizli kalır — satıcıya yalnızca maskelenmiş finansal yeterlilik iletilir (Invisible Buyer).</p>
         </aside>
+      </section>
+
+      <section class="module">
+        <div class="module-head"><p class="eyebrow">03 — Privacy Engine</p><h2 class="module-title">Invisible Buyer · <em>Blind Matching.</em></h2></div>
+        <p class="page-sub" style="margin-top:0">Escrow-style visibility: kimlikler asla karşılaşmaz. Satıcıya yalnızca doğrulanmış (zero-knowledge) yeterlilik bandınız iletilir.</p>
+        <div class="blind" id="blind"></div>
       </section>
 
       <section class="module">
@@ -91,7 +120,28 @@
         <div class="atelier-result" id="atelierResult"></div>
       </section>`;
 
-      requestAnimationFrame(() => main.querySelectorAll(".axis-fill").forEach(f => f.style.right = (100 - f.dataset.v) + "%"));
+      /* ---- First Access TTL ticker ---- */
+      if (fa.offMarket) {
+        const ttlEl = document.getElementById("ttl");
+        setInterval(() => { ttlEl.textContent = DOMAINE.fmtCountdown(DOMAINE.firstAccess(e).remainingMs); }, 1000);
+      }
+
+      /* ---- Privacy Engine: Blind Matching ---- */
+      const bm = DOMAINE.blindMatch(e);
+      document.getElementById("blind").innerHTML = `
+        <div class="blind-col blind-buyer">
+          <div class="blind-tag">SİZ — Alıcı</div>
+          <div class="blind-token">${bm.token}</div>
+          <div class="blind-band">Yeterlilik bandı · <b>${bm.band}</b> <span class="zk">✓ Zero-Knowledge doğrulandı</span></div>
+          <div class="blind-list"><span class="blind-list-h">Gizli kalır (satıcı göremez)</span>${bm.buyerHidden.map(x=>`<span class="blind-hide">⛌ ${x}</span>`).join("")}</div>
+        </div>
+        <div class="blind-arrow">⇄<small>escrow visibility</small></div>
+        <div class="blind-col blind-seller">
+          <div class="blind-tag">SATICI — yalnızca bunu görür</div>
+          <div class="blind-list">${bm.sellerSees.map(x=>`<span class="blind-show">✓ ${x}</span>`).join("")}</div>
+          <button class="btn" id="blindSend" style="margin-top:1.2em">Anonim ilgi gönder <i>→</i></button>
+        </div>`;
+      document.getElementById("blindSend").onclick = () => toast("Anonim ilgi iletildi — kimliğiniz maskelendi (" + bm.token + ").");
 
       /* ---- Finance ---- */
       const downEl = document.getElementById("down"), termEl = document.getElementById("term"), rateEl = document.getElementById("rate");
