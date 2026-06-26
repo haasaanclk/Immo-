@@ -19,9 +19,16 @@ bir gayrimenkul concierge konsepti.
 ```bash
 npm install
 npm run dev      # http://localhost:3000
+npm test         # karar mantığı testleri (finans, eşleştirme, pasaport, üyelik)
 # üretim derlemesi:
 npm run build && npm run start
 ```
+
+## Sağlamlık
+- **Otomatik testler** (`tests/`, Node test runner + tsx): finans modeli, kişiselleştirilmiş
+  eşleştirme sıralaması, pasaport seri/kalite endeksi, üyelik gating'i — saf fonksiyonlar test edilir.
+- **Girdi doğrulama** API uçlarında (e-posta/parola/ad biçimi, uzunluk sınırları).
+- Markaya uygun **404** sayfası.
 
 ## ⭐ Kişisel Panel — "Sizin DOMAINE'iniz"
 `/dashboard` her şeyi tek deneyimde toplar:

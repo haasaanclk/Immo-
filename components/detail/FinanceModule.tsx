@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { computeFinance } from "@/lib/finance";
 
 const eur = (n: number) =>
   new Intl.NumberFormat("de-DE", {
@@ -8,14 +9,6 @@ const eur = (n: number) =>
     currency: "EUR",
     maximumFractionDigits: 0,
   }).format(Math.round(n));
-
-const energyFactor: Record<string, number> = {
-  "A+": 0.0008,
-  A: 0.0012,
-  "B+": 0.0017,
-  B: 0.0022,
-  C: 0.003,
-};
 
 export function FinanceModule({
   price,
@@ -31,24 +24,10 @@ export function FinanceModule({
   const [rate, setRate] = useState(4);
   const [budget, setBudget] = useState<string>("");
 
-  const calc = useMemo(() => {
-    const down = (price * downPct) / 100;
-    const loan = price - down;
-    const r = rate / 100 / 12;
-    const n = term * 12;
-    const mortgage =
-      r === 0 ? loan / n : (loan * r) / (1 - Math.pow(1 + r, -n));
-    const maintenance = (price * 0.012) / 12;
-    const energyCost = (price * (energyFactor[energy] ?? 0.0015)) / 12;
-    const fees = (price * 0.003) / 12;
-    const totalMonthly = mortgage + maintenance + energyCost + fees;
-
-    const growth = 0.018 + (investment - 8) * 0.006;
-    const value10 = price * Math.pow(1 + growth, 10);
-    const gain = value10 - price;
-
-    return { down, loan, mortgage, maintenance, energyCost, fees, totalMonthly, growth, value10, gain };
-  }, [price, downPct, term, rate, energy, investment]);
+  const calc = useMemo(
+    () => computeFinance({ price, downPct, term, rate, energy, investment }),
+    [price, downPct, term, rate, energy, investment],
+  );
 
   const b = parseFloat(budget.replace(/[^\d]/g, ""));
   const verdict =

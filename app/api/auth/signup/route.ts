@@ -10,7 +10,13 @@ export async function POST(req: Request) {
   if (!email || !password || !name) {
     return NextResponse.json({ error: "Ad, e-posta ve parola gerekli." }, { status: 400 });
   }
-  if (String(password).length < 6) {
+  if (typeof name !== "string" || name.trim().length < 2 || name.length > 80) {
+    return NextResponse.json({ error: "Geçerli bir ad girin." }, { status: 400 });
+  }
+  if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 160) {
+    return NextResponse.json({ error: "Geçerli bir e-posta girin." }, { status: 400 });
+  }
+  if (typeof password !== "string" || password.length < 6 || password.length > 200) {
     return NextResponse.json({ error: "Parola en az 6 karakter olmalı." }, { status: 400 });
   }
   if (await getUserByEmail(email)) {
