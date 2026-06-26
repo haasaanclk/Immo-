@@ -210,6 +210,52 @@
     return m[axis] + " (" + val + "/100).";
   }
 
+  /* ---------- Finance / investment intelligence (deterministic) ---------- */
+  function finance(estate, opts) {
+    const o = Object.assign({ downPct: 35, termYears: 20, ratePct: 3.4 }, opts || {});
+    const price = estate.price || 0;
+    const down = price * o.downPct / 100;
+    const loan = Math.max(price - down, 0);
+    const r = o.ratePct / 100 / 12, n = o.termYears * 12;
+    const monthly = r === 0 ? (n ? loan / n : 0) : (loan * r) / (1 - Math.pow(1 + r, -n));
+    const maintenance = price * 0.012;            // annual
+    const energy = (estate.m2 || 0) * 18;          // annual
+    const tax = price * 0.004;                      // annual
+    const annualOwnership = maintenance + energy + tax;
+    const monthlyAll = monthly + annualOwnership / 12;
+    const dna = computeDNA(estate).axes;
+    const growth = 0.02 + (dna.investment / 100) * 0.05; // 2%–7% / yr
+    const projection = [];
+    for (let y = 0; y <= 10; y++) projection.push(Math.round(price * Math.pow(1 + growth, y)));
+    return { price, down, loan, monthly: Math.round(monthly), maintenance: Math.round(maintenance),
+      energy: Math.round(energy), tax: Math.round(tax), monthlyAll: Math.round(monthlyAll),
+      growthPct: +(growth * 100).toFixed(1), projection };
+  }
+
+  /* ---------- Atelier — AI interior style studio (deterministic) ---------- */
+  const ATELIER_STYLES = [
+    { key: "minimal",   name: "Modern Minimal", palette: ["#EDEAE3", "#0D0D0D", "#9A7B4F"], perM2: 1200, impact: 6.5,
+      materials: "Cilalı beton, dudak detaylı meşe, mat siyah çelik, geniş cam",
+      note: "Hatları sadeleştirir, ışığı serbest bırakır — değer artışının çoğu algıdan gelir." },
+    { key: "scandi",    name: "İskandinav",     palette: ["#F4F1EA", "#D8CBB8", "#7E8B7A"], perM2: 850, impact: 4.0,
+      materials: "Açık meşe, keten, kireç badana, yün, doğal taş",
+      note: "Sıcak ve nefes alan bir sadelik; geniş alıcı kitlesine hitap eder." },
+    { key: "oldmoney",  name: "Klasik · Old Money", palette: ["#1E3A2F", "#B08D57", "#EFEDE6"], perM2: 1900, impact: 9.0,
+      materials: "Ceviz lambri, pirinç, kannellü mermer, kadife, antika parke",
+      note: "Zamansız prestij. En yüksek değer etkisi, en yüksek maliyet." },
+    { key: "mediterran",name: "Akdeniz",        palette: ["#F0E6D2", "#C9784F", "#5B7B7A"], perM2: 980, impact: 5.0,
+      materials: "Kireç sıva, terrakota, zeytin ağacı, dokuma, pişmiş toprak",
+      note: "Tatil-evi karakteri; ikinci konut ve kiralama getirisini güçlendirir." },
+  ];
+  function atelier(estate, key) {
+    const s = ATELIER_STYLES.find((x) => x.key === key) || ATELIER_STYLES[0];
+    const jitter = (seeded(estate.title + s.key, "atl") - 0.5) * 1.6;
+    const cost = Math.round((estate.m2 || 200) * s.perM2);
+    const impactPct = +(s.impact + jitter).toFixed(1);
+    const valueGain = Math.round((estate.price || 0) * impactPct / 100);
+    return { style: s, cost, impactPct, valueGain };
+  }
+
   /* ---------- shared chrome ---------- */
   const NAV = [
     { href: "index.html", label: "Archive", key: "archive" },
@@ -254,6 +300,7 @@
     computeDNA, getEstates, getEstate, saveEstate, deleteEstate,
     getSaved, toggleSaved, isSaved,
     QUESTIONS, buildProfile, saveProfile, getProfile, matchEstates,
+    finance, ATELIER_STYLES, atelier,
     renderHeader, renderFooter, mountChrome,
   };
 })(window);

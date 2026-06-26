@@ -46,7 +46,8 @@ const CATEGORIES = [
 ];
 
 const INC = 360 / ITEM_COUNT;
-let radius = 470, yOffset = 0, ringRot = 0, introOffset = 0, introPlaying = false;
+const AMBIENT_SPEED = 0.012; // slow cinematic idle drift (deg/frame)
+let radius = 470, yOffset = 0, ringRot = 0, introOffset = 0, introPlaying = false, ambientRot = 0;
 const items = [];
 let activeCard = null;
 const isMobile = window.matchMedia(MOBILE_MQ).matches;
@@ -83,7 +84,7 @@ function computeGeometry() {
   }
 }
 
-function angleOf(card) { return card.index * INC - 90 + ringRot + introOffset; }
+function angleOf(card) { return card.index * INC - 90 + ringRot + introOffset + ambientRot; }
 function depthOpacity(rotZdeg) { const back = Math.cos(rotZdeg * DEG); return 1 - (back + 1) * 0.25; }
 
 function placeResting(card) {
@@ -229,6 +230,14 @@ function initCursor() {
   });
 }
 
+function initAmbient() {
+  function tick() {
+    if (!introPlaying && !activeCard) { ambientRot += AMBIENT_SPEED; updateRing(); }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
 function initScroll() {
   ScrollTrigger.create({ trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.4,
     onUpdate: (self) => { ringRot = self.progress * 360 * TURNS; updateRing(); } });
@@ -302,7 +311,7 @@ function init() {
   if (isMobile) {
     initMobile();
   } else {
-    buildLabels(); initParallax(); initScroll(); initCursor();
+    buildLabels(); initParallax(); initScroll(); initCursor(); initAmbient();
     scene.addEventListener("pointermove", onPointerMove);
     scene.addEventListener("pointerleave", () => setActive(null));
   }

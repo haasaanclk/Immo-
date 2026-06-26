@@ -65,9 +65,81 @@
           </div>
           <p class="muted" style="font-size:12px;margin-top:1em">Talebinizde kimliğiniz gizli kalır — satıcıya yalnızca maskelenmiş finansal yeterlilik iletilir (Invisible Buyer).</p>
         </aside>
+      </section>
+
+      <section class="module">
+        <div class="module-head"><p class="eyebrow">04 — Akıllı Finans</p><h2 class="module-title">Yatırım <em>zekâsı.</em></h2></div>
+        <div class="finance">
+          <div class="fin-controls">
+            <div class="slider"><label>Peşinat <b id="downV">35%</b></label><input type="range" id="down" min="10" max="80" value="35"/></div>
+            <div class="slider"><label>Vade <b id="termV">20 yıl</b></label><input type="range" id="term" min="5" max="30" value="20"/></div>
+            <div class="slider"><label>Faiz <b id="rateV">3.4%</b></label><input type="range" id="rate" min="10" max="80" value="34"/></div>
+            <p class="muted" style="font-size:12px;margin-top:.4em">Deterministik tahmin — bakım, enerji ve vergi dâhil toplam sahip olma maliyeti.</p>
+          </div>
+          <div class="fin-out" id="finOut"></div>
+        </div>
+        <div class="projection">
+          <div class="proj-head"><span>10 yıllık değer projeksiyonu</span><span id="growth" class="muted"></span></div>
+          <div class="proj-bars" id="projBars"></div>
+        </div>
+      </section>
+
+      <section class="module">
+        <div class="module-head"><p class="eyebrow">05 — Atelier</p><h2 class="module-title">AI iç mimar <em>stüdyosu.</em></h2></div>
+        <p class="page-sub" style="margin-top:0">Bir tarz seçin; palet, malzeme, tahmini maliyet ve ev değerine etkisini anında görün.</p>
+        <div class="atelier-chips" id="atelierChips"></div>
+        <div class="atelier-result" id="atelierResult"></div>
       </section>`;
 
       requestAnimationFrame(() => main.querySelectorAll(".axis-fill").forEach(f => f.style.right = (100 - f.dataset.v) + "%"));
+
+      /* ---- Finance ---- */
+      const downEl = document.getElementById("down"), termEl = document.getElementById("term"), rateEl = document.getElementById("rate");
+      function renderFinance() {
+        const downPct = +downEl.value, termYears = +termEl.value, ratePct = +rateEl.value / 10;
+        document.getElementById("downV").textContent = downPct + "%";
+        document.getElementById("termV").textContent = termYears + " yıl";
+        document.getElementById("rateV").textContent = ratePct.toFixed(1) + "%";
+        const f = DOMAINE.finance(e, { downPct, termYears, ratePct });
+        document.getElementById("finOut").innerHTML = `
+          <div class="fin-big"><span class="muted">Aylık ödeme</span><strong>${DOMAINE.money(f.monthly)}</strong></div>
+          <div class="fin-rows">
+            <div><span>Kredi tutarı</span><b>${DOMAINE.money(f.loan)}</b></div>
+            <div><span>Peşinat</span><b>${DOMAINE.money(f.down)}</b></div>
+            <div><span>Aylık toplam (sahip olma)</span><b>${DOMAINE.money(f.monthlyAll)}</b></div>
+            <div><span>Yıllık bakım · enerji · vergi</span><b>${DOMAINE.money(f.maintenance + f.energy + f.tax)}</b></div>
+          </div>`;
+        document.getElementById("growth").textContent = "yıllık ~%" + f.growthPct;
+        const max = Math.max(...f.projection);
+        document.getElementById("projBars").innerHTML = f.projection.map((v, y) =>
+          `<div class="pbar"><span class="pbar-fill" style="height:${Math.round(v / max * 100)}%"></span><i>${y}</i></div>`).join("");
+        requestAnimationFrame(() => document.querySelectorAll(".pbar-fill").forEach(b => b.style.transform = "scaleY(1)"));
+      }
+      [downEl, termEl, rateEl].forEach(el => el.addEventListener("input", renderFinance));
+      renderFinance();
+
+      /* ---- Atelier ---- */
+      const chipsEl = document.getElementById("atelierChips");
+      chipsEl.innerHTML = DOMAINE.ATELIER_STYLES.map((s, i) => `<button class="chip ${i === 0 ? 'on' : ''}" data-key="${s.key}">${s.name}</button>`).join("");
+      function renderAtelier(key) {
+        const a = DOMAINE.atelier(e, key);
+        document.getElementById("atelierResult").innerHTML = `
+          <div class="atl-palette">${a.style.palette.map(c => `<span style="background:${c}"></span>`).join("")}</div>
+          <div class="atl-info">
+            <h3>${a.style.name}</h3>
+            <p class="atl-mat">${a.style.materials}</p>
+            <p class="muted" style="font-size:13px">${a.style.note}</p>
+            <div class="atl-stats">
+              <div><span class="muted">Tahmini maliyet</span><b>${DOMAINE.money(a.cost)}</b></div>
+              <div><span class="muted">Ev değerine etki</span><b class="pos">+%${a.impactPct} · ${DOMAINE.money(a.valueGain)}</b></div>
+            </div>
+          </div>`;
+      }
+      chipsEl.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+        chipsEl.querySelectorAll(".chip").forEach(x => x.classList.remove("on")); b.classList.add("on");
+        renderAtelier(b.dataset.key);
+      });
+      renderAtelier(DOMAINE.ATELIER_STYLES[0].key);
       main.querySelectorAll(".thumb").forEach(t => t.onclick = () => {
         document.getElementById("hero").src = imgs[t.dataset.i];
         main.querySelectorAll(".thumb").forEach(x => x.classList.remove("on")); t.classList.add("on");
