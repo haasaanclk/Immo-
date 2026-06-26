@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Estate</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <main class="wrap" id="main"></main>
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script>
+    DOMAINE.mountChrome("estates");
+    const id = new URLSearchParams(location.search).get("id");
+    const e = DOMAINE.getEstate(id);
+    const main = document.getElementById("main");
+    function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+    if (!e) {
+      main.innerHTML = `<section class="page-head"><h1 class="page-title">Mülk bulunamadı.</h1>
+        <p class="page-sub"><a class="btn--text" href="estates.html">← Portföye dön</a></p></section>`;
+    } else {
+      const dna = DOMAINE.computeDNA(e);
+      const imgs = (e.images && e.images.length) ? e.images : [e.image];
+      const axisRows = Object.keys(DOMAINE.AXIS_LABELS).map(k =>
+        `<div class="axis"><div class="axis-top"><span>${DOMAINE.AXIS_LABELS[k]}</span><span>${dna.axes[k]}</span></div>
+         <div class="axis-bar"><span class="axis-fill" data-v="${dna.axes[k]}"></span></div></div>`).join("");
+
+      main.innerHTML = `
+      <section class="page-head" style="padding-bottom:1.4em">
+        <p class="eyebrow"><a href="estates.html">Estates</a> · ${e.category} · ${e.city}</p>
+        <h1 class="page-title" style="font-size:clamp(30px,4.4vw,54px)">${e.title}</h1>
+        <p class="page-sub">${e.blurb || ""}</p>
+      </section>
+      <section class="detail">
+        <div>
+          <div class="gallery-main"><img id="hero" src="${imgs[0]}" alt="${e.title}" onerror="this.src='public/image-1.png'"/></div>
+          <div class="thumbs">${imgs.map((s,i)=>`<img class="thumb ${i===0?'on':''}" data-i="${i}" src="${s}" onerror="this.src='public/image-1.png'"/>`).join("")}</div>
+          <dl class="spec-list">
+            <div class="spec"><dt>Fiyat</dt><dd>${DOMAINE.money(e.price)}</dd></div>
+            <div class="spec"><dt>Kategori</dt><dd>${e.category}</dd></div>
+            <div class="spec"><dt>Yaşam alanı</dt><dd>${DOMAINE.area(e.m2)}</dd></div>
+            <div class="spec"><dt>Yatak odası</dt><dd>${e.beds}</dd></div>
+            <div class="spec"><dt>Kat sayısı</dt><dd>${e.floors}</dd></div>
+            <div class="spec"><dt>Çatı tipi</dt><dd>${e.roof || "—"}</dd></div>
+            <div class="spec"><dt>İkametgah tipi</dt><dd>${e.residence || "—"}</dd></div>
+            <div class="spec"><dt>İnşa yılı</dt><dd>${e.year || "—"}</dd></div>
+            <div class="spec"><dt>Konum</dt><dd>${e.city}</dd></div>
+            <div class="spec"><dt>Pasaport No</dt><dd>${dna.serial}</dd></div>
+          </dl>
+        </div>
+        <aside>
+          <div class="dna">
+            <div class="dna-head">
+              <div class="dna-q">${dna.quality}<small> /100</small></div>
+              <div class="dna-serial">PROPERTY DNA<br/>${dna.serial}</div>
+            </div>
+            <p class="muted" style="font-size:13px;margin-top:.4em">Kalite Endeksi — mimari, malzeme, mahremiyet, lokasyon, prestij ve yatırım eksenlerinin ağırlıklı bileşimi.</p>
+            <div class="dna-axes">${axisRows}</div>
+          </div>
+          <div style="display:flex; gap:.7em; margin-top:1.4em; flex-wrap:wrap">
+            <button class="btn" id="viewBtn">Özel gösterim talep et <i>→</i></button>
+            <button class="btn btn--ghost" id="saveBtn">${DOMAINE.isSaved(e.id)?'✦ Koleksiyonda':'✧ Koleksiyona ekle'}</button>
+          </div>
+          <p class="muted" style="font-size:12px;margin-top:1em">Talebinizde kimliğiniz gizli kalır — satıcıya yalnızca maskelenmiş finansal yeterlilik iletilir (Invisible Buyer).</p>
+        </aside>
+      </section>`;
+
+      requestAnimationFrame(() => main.querySelectorAll(".axis-fill").forEach(f => f.style.right = (100 - f.dataset.v) + "%"));
+      main.querySelectorAll(".thumb").forEach(t => t.onclick = () => {
+        document.getElementById("hero").src = imgs[t.dataset.i];
+        main.querySelectorAll(".thumb").forEach(x => x.classList.remove("on")); t.classList.add("on");
+      });
+      document.getElementById("saveBtn").onclick = (ev) => {
+        const on = DOMAINE.toggleSaved(e.id);
+        ev.target.textContent = on ? "✦ Koleksiyonda" : "✧ Koleksiyona ekle";
+        toast(on ? "Koleksiyonunuza eklendi" : "Koleksiyondan çıkarıldı");
+      };
+      document.getElementById("viewBtn").onclick = () => toast("Özel gösterim talebiniz concierge ekibine iletildi.");
+    }
+  </script>
+</body>
+</html>

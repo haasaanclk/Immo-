@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Estates</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="page-head">
+      <p class="eyebrow">Selected Estates — 2014 / 2026</p>
+      <h1 class="page-title">The <em>Portfolio.</em></h1>
+      <p class="page-sub">Binlerce ilan değil — özenle seçilmiş mülkler. Her biri için doğrulanmış bir <strong>Property DNA</strong> ve dijital ev pasaportu. İlanınızı eklemek için <a class="btn--text" href="publish.html">Publish</a>.</p>
+    </section>
+
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script>
+    DOMAINE.mountChrome("estates");
+    const grid = document.getElementById("grid");
+    const filtersEl = document.getElementById("filters");
+    let active = "All";
+
+    const cats = ["All", ...Array.from(new Set(DOMAINE.getEstates().map(e => e.category)))];
+    function renderFilters() {
+      filtersEl.innerHTML = cats.map(c => `<button class="chip ${c===active?'on':''}" data-cat="${c}">${c}</button>`).join("");
+      filtersEl.querySelectorAll(".chip").forEach(b => b.onclick = () => { active = b.dataset.cat; renderFilters(); renderGrid(); });
+    }
+    function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+    function renderGrid() {
+      const list = DOMAINE.getEstates().filter(e => active==="All" || e.category===active);
+      if (!list.length) { grid.innerHTML = `<div class="notice">Bu kategoride henüz mülk yok.</div>`; return; }
+      grid.innerHTML = list.map(e => {
+        const dna = DOMAINE.computeDNA(e);
+        const fav = DOMAINE.isSaved(e.id);
+        return `<article class="card" data-id="${e.id}">
+          <div class="card-media">
+            <img src="${e.image}" alt="${e.title}" loading="lazy" onerror="this.src='public/image-1.png'"/>
+            <span class="card-tag">${e.category}</span>
+            <button class="card-fav ${fav?'on':''}" data-fav="${e.id}" title="Koleksiyona ekle">${fav?'✦':'✧'}</button>
+          </div>
+          <div class="card-body">
+            <div>
+              <div class="card-cat">${e.city} · DNA ${dna.quality}</div>
+              <div class="card-title">${e.title}</div>
+              <div class="card-meta">${e.beds} yatak · ${DOMAINE.area(e.m2)} · ${e.floors} kat</div>
+            </div>
+            <div class="card-price">${DOMAINE.money(e.price)}</div>
+          </div>
+        </article>`;
+      }).join("");
+      grid.querySelectorAll(".card").forEach(c => c.onclick = (ev) => {
+        if (ev.target.closest("[data-fav]")) return;
+        location.href = "estate.html?id=" + c.dataset.id;
+      });
+      grid.querySelectorAll("[data-fav]").forEach(b => b.onclick = (ev) => {
+        ev.stopPropagation();
+        const on = DOMAINE.toggleSaved(b.dataset.fav);
+        b.classList.toggle("on", on); b.textContent = on ? "✦" : "✧";
+        toast(on ? "Koleksiyonunuza eklendi" : "Koleksiyondan çıkarıldı");
+      });
+    }
+    renderFilters(); renderGrid();
+  </script>
+</body>
+</html>

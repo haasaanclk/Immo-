@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Concierge</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="cq" id="cq"></section>
+  </main>
+  <script src="store.js"></script>
+  <script>
+    DOMAINE.mountChrome("concierge");
+    const root = document.getElementById("cq");
+    const Q = DOMAINE.QUESTIONS;
+    let step = 0; const answers = [];
+
+    function renderIntro() {
+      root.innerHTML = `
+        <p class="cq-step">DOMAINE Concierge</p>
+        <h1 class="cq-q">5.000 ilan gezmezsiniz.<br/>Yapay zekâ <em>yaşam tarzınızı</em> anlar.</h1>
+        <p class="page-sub">Birkaç soruyla yaşam profilinizi çıkarır, portföyü sizin için sıralarız — her öneride bir <em>“neden”</em> ile. Filtre değil; bir karakter.</p>
+        <button class="btn" id="startBtn" style="margin-top:2em">Görüşmeye başla <i>→</i></button>`;
+      document.getElementById("startBtn").onclick = () => { step = 0; renderQuestion(); };
+    }
+
+    function renderQuestion() {
+      const q = Q[step];
+      root.innerHTML = `
+        <div class="cq-progress"><span style="width:${(step/Q.length)*100}%"></span></div>
+        <p class="cq-step">Soru ${step+1} / ${Q.length}</p>
+        <h1 class="cq-q">${q.q}</h1>
+        <div class="cq-opts">${q.opts.map((o,i)=>`<button class="cq-opt" data-i="${i}">${o.label}<i>→</i></button>`).join("")}</div>`;
+      root.querySelectorAll(".cq-opt").forEach(b => b.onclick = () => {
+        answers[step] = +b.dataset.i;
+        if (step < Q.length - 1) { step++; renderQuestion(); } else renderResult();
+      });
+    }
+
+    function renderResult() {
+      const profile = DOMAINE.buildProfile(answers);
+      DOMAINE.saveProfile(profile);
+      const matches = DOMAINE.matchEstates(profile, 6);
+      const axes = Object.keys(DOMAINE.AXIS_LABELS).map(k =>
+        `<div class="axis"><div class="axis-top"><span>${DOMAINE.AXIS_LABELS[k]}</span><span>${profile[k]}</span></div>
+         <div class="axis-bar"><span class="axis-fill" data-v="${profile[k]}"></span></div></div>`).join("");
+      root.innerHTML = `
+        <div class="cq-progress"><span style="width:100%"></span></div>
+        <p class="cq-step">Yaşam Profiliniz</p>
+        <h1 class="cq-q">Sizin için <em>seçildi.</em></h1>
+        <p class="page-sub">Profiliniz portföye karşı puanlandı. Önce şunları görmenizi öneriyoruz.</p>
+        <div class="cq-result-axes">${axes}</div>
+        <div class="grid" style="padding-top:0">
+          ${matches.map(m => {
+            const e = m.estate;
+            return `<article class="card" onclick="location.href='estate.html?id=${e.id}'">
+              <div class="card-media"><img src="${e.image}" onerror="this.src='public/image-1.png'"/>
+                <span class="card-tag">%${m.match} uyum</span></div>
+              <div class="card-body"><div>
+                <div class="card-cat">${e.category} · ${e.city}</div>
+                <div class="card-title">${e.title}</div>
+                <div class="card-meta">${m.reason}</div>
+              </div><div class="card-price">${DOMAINE.money(e.price)}</div></div>
+            </article>`;
+          }).join("")}
+        </div>
+        <div style="margin-top:1em; display:flex; gap:.8em; flex-wrap:wrap">
+          <a class="btn btn--ghost" href="estates.html">Tüm portföyü gör</a>
+          <button class="btn btn--ghost" id="again">Görüşmeyi tekrarla</button>
+        </div>`;
+      requestAnimationFrame(() => root.querySelectorAll(".axis-fill").forEach(f => f.style.right = (100 - f.dataset.v) + "%"));
+      document.getElementById("again").onclick = () => { answers.length = 0; step = 0; renderIntro(); };
+    }
+
+    renderIntro();
+  </script>
+</body>
+</html>

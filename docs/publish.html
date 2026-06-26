@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Publish</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="page-head">
+      <p class="eyebrow">List with DOMAINE</p>
+      <h1 class="page-title">İlanınızı <em>yayınlayın.</em></h1>
+      <p class="page-sub">Mülkünüzün fotoğraflarını ve özelliklerini ekleyin; sistem anında bir <strong>Property DNA</strong> ve dijital ev pasaportu üretsin. İlanınız portföyde görünür ve concierge eşleştirmesine girer.</p>
+    </section>
+
+    <form class="form" id="form">
+      <div class="field">
+        <label>Mülk başlığı</label>
+        <input name="title" required placeholder="örn. Villa Bosphorus" />
+      </div>
+
+      <div class="row">
+        <div class="field"><label>Kategori</label><select name="category" id="category"></select></div>
+        <div class="field"><label>Şehir / Konum</label><input name="city" list="cities" required placeholder="örn. İstanbul" />
+          <datalist id="cities"></datalist></div>
+      </div>
+
+      <div class="row-3">
+        <div class="field"><label>Fiyat (EUR)</label><input name="price" type="number" min="0" required placeholder="8900000" /></div>
+        <div class="field"><label>Yaşam alanı (m²)</label><input name="m2" type="number" min="0" required placeholder="540" /></div>
+        <div class="field"><label>İnşa yılı</label><input name="year" type="number" min="1800" max="2026" placeholder="2020" /></div>
+      </div>
+
+      <div class="row-3">
+        <div class="field"><label>Yatak odası</label><input name="beds" type="number" min="0" placeholder="6" /></div>
+        <div class="field"><label>Kat sayısı</label><input name="floors" type="number" min="1" placeholder="3" /></div>
+        <div class="field"><label>İkametgah tipi</label><select name="residence" id="residence"></select></div>
+      </div>
+
+      <div class="field"><label>Çatı tipi</label><select name="roof" id="roof"></select></div>
+
+      <div class="field"><label>Açıklama</label><textarea name="blurb" placeholder="Mülkün karakterini, manzarasını ve ayrıcalıklarını anlatın…"></textarea></div>
+
+      <div class="field">
+        <label>Ev fotoğrafları</label>
+        <div class="dropzone" id="dropzone">
+          <strong>Fotoğraf ekleyin</strong>
+          <span class="muted">Tıklayın veya sürükleyip bırakın · JPG / PNG</span>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden />
+        <div class="previews" id="previews"></div>
+      </div>
+
+      <div class="live-dna" id="liveDna" style="display:none">
+        <p class="eyebrow">Canlı Property DNA önizleme</p>
+        <div class="dna-axes" id="liveAxes" style="margin-top:1em"></div>
+      </div>
+
+      <div style="display:flex; gap:.8em; flex-wrap:wrap">
+        <button type="submit" class="btn">İlanı yayınla <i>→</i></button>
+        <a class="btn btn--ghost" href="estates.html">İptal</a>
+      </div>
+    </form>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script>
+    DOMAINE.mountChrome("publish");
+    const form = document.getElementById("form");
+    const images = []; // dataURLs
+
+    // populate selects/datalist
+    document.getElementById("category").innerHTML = DOMAINE.CATEGORIES.map(c=>`<option>${c}</option>`).join("");
+    document.getElementById("residence").innerHTML = DOMAINE.RESIDENCE_TYPES.map(c=>`<option>${c}</option>`).join("");
+    document.getElementById("roof").innerHTML = DOMAINE.ROOF_TYPES.map(c=>`<option>${c}</option>`).join("");
+    document.getElementById("cities").innerHTML = DOMAINE.CITIES.map(c=>`<option value="${c}">`).join("");
+
+    function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1800); }
+
+    // photo upload
+    const fileInput = document.getElementById("fileInput");
+    const dz = document.getElementById("dropzone");
+    dz.onclick = () => fileInput.click();
+    dz.ondragover = (e) => { e.preventDefault(); dz.style.borderColor = "#0d0d0d"; };
+    dz.ondragleave = () => dz.style.borderColor = "";
+    dz.ondrop = (e) => { e.preventDefault(); dz.style.borderColor=""; addFiles(e.dataTransfer.files); };
+    fileInput.onchange = () => addFiles(fileInput.files);
+
+    function addFiles(files) {
+      [...files].forEach(f => {
+        if (!f.type.startsWith("image/")) return;
+        const r = new FileReader();
+        r.onload = () => { images.push(r.result); renderPreviews(); };
+        r.readAsDataURL(f);
+      });
+    }
+    function renderPreviews() {
+      const wrap = document.getElementById("previews");
+      wrap.innerHTML = images.map((src,i)=>`<div class="preview"><img src="${src}"/><button type="button" data-i="${i}">✕</button></div>`).join("");
+      wrap.querySelectorAll("button").forEach(b => b.onclick = () => { images.splice(+b.dataset.i,1); renderPreviews(); });
+    }
+
+    // live DNA preview
+    function draft() {
+      const d = Object.fromEntries(new FormData(form).entries());
+      return { title:d.title||"Mülk", category:d.category, city:d.city||"—",
+        price:+d.price||0, m2:+d.m2||0, beds:+d.beds||0, floors:+d.floors||1, year:+d.year||2020,
+        roof:d.roof, residence:d.residence, blurb:d.blurb };
+    }
+    function updateLiveDna() {
+      const d = draft();
+      if (!d.price || !d.m2) { document.getElementById("liveDna").style.display="none"; return; }
+      const dna = DOMAINE.computeDNA(d);
+      document.getElementById("liveDna").style.display="block";
+      document.getElementById("liveAxes").innerHTML =
+        `<div class="axis"><div class="axis-top"><span><strong>Kalite Endeksi</strong></span><span><strong>${dna.quality}/100</strong></span></div>
+         <div class="axis-bar"><span class="axis-fill" style="right:${100-dna.quality}%"></span></div></div>` +
+        Object.keys(DOMAINE.AXIS_LABELS).map(k =>
+        `<div class="axis"><div class="axis-top"><span>${DOMAINE.AXIS_LABELS[k]}</span><span>${dna.axes[k]}</span></div>
+         <div class="axis-bar"><span class="axis-fill" style="right:${100-dna.axes[k]}%"></span></div></div>`).join("");
+    }
+    form.addEventListener("input", updateLiveDna);
+
+    // submit
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const d = draft();
+      if (!d.title || !d.price || !d.m2) { toast("Lütfen başlık, fiyat ve m² girin."); return; }
+      d.images = images.length ? images : ["public/image-1.png"];
+      const saved = DOMAINE.saveEstate(d);
+      toast("İlanınız yayınlandı — pasaport oluşturuldu.");
+      setTimeout(() => location.href = "estate.html?id=" + saved.id, 900);
+    };
+  </script>
+</body>
+</html>
