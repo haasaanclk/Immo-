@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Collection</title>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="motion.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="page-head">
+      <p class="eyebrow">Sizin DOMAINE'iniz</p>
+      <h1 class="page-title">Koleksiyon<em>unuz.</em></h1>
+      <p class="page-sub">Kaydettiğiniz mülkler ve gönderdiğiniz özel gösterim talepleri — yalnızca size özel, bu cihazda saklanır.</p>
+    </section>
+
+    <div id="savedWrap"></div>
+
+    <section class="module" id="viewingsWrap" style="border-top:1px solid var(--line)"></section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script src="motion.js"></script>
+  <script>
+    DOMAINE.mountChrome("");
+    function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+    function renderSaved() {
+      const ids = DOMAINE.getSaved();
+      const list = ids.map(id => DOMAINE.getEstate(id)).filter(Boolean);
+      const wrap = document.getElementById("savedWrap");
+      if (!list.length) {
+        wrap.innerHTML = `<div class="notice" style="margin:3em 0">Henüz mülk kaydetmediniz.<br/><a class="btn--text" href="estates.html">Portföyü keşfedin →</a></div>`;
+        return;
+      }
+      wrap.innerHTML = `<div class="results-grid" style="padding:2.6em 0 1em">${list.map(e=>{
+        const dna = DOMAINE.computeDNA(e);
+        return `<article class="card" data-id="${e.id}">
+          <div class="card-media"><img src="${e.image}" onerror="this.src='public/image-1.png'"/>
+            <span class="card-tag">${e.category}</span>
+            <button class="card-fav on" data-fav="${e.id}" title="Çıkar">✦</button></div>
+          <div class="card-body"><div>
+            <div class="card-cat">${e.city} · DNA ${dna.quality}</div>
+            <div class="card-title">${e.title}</div>
+            <div class="card-meta">${e.beds} yatak · ${DOMAINE.area(e.m2)} · ${e.floors} kat</div>
+          </div><div class="card-price">${DOMAINE.money(e.price)}</div></div>
+        </article>`;
+      }).join("")}</div>`;
+      wrap.querySelectorAll(".card").forEach(c=>c.onclick=(ev)=>{ if(ev.target.closest("[data-fav]")) return; location.href="estate.html?id="+c.dataset.id; });
+      wrap.querySelectorAll("[data-fav]").forEach(btn=>btn.onclick=(ev)=>{ ev.stopPropagation();
+        DOMAINE.toggleSaved(btn.dataset.fav); toast("Koleksiyondan çıkarıldı"); renderSaved(); });
+    }
+
+    function renderViewings() {
+      const vs = DOMAINE.getViewings();
+      const wrap = document.getElementById("viewingsWrap");
+      wrap.innerHTML = `<div class="module-head"><p class="eyebrow">Invisible Buyer</p><h2 class="module-title">Gösterim <em>talepleriniz.</em></h2></div>` +
+        (!vs.length
+          ? `<div class="notice">Henüz gösterim talebiniz yok. Bir mülk sayfasından "Özel gösterim talep et" ile başlayın.</div>`
+          : `<div class="viewing-list">${vs.map(v=>`
+              <div class="viewing-row">
+                <div><div class="card-title" style="font-size:17px">${v.title}</div>
+                  <div class="card-meta">${v.date || "Tarih esnek"} · ${v.band} · <span class="zk">Anonim · ${v.token}</span></div></div>
+                <div class="muted" style="font-size:12px">${new Date(v.at).toLocaleDateString("tr-TR")}</div>
+              </div>`).join("")}</div>`);
+    }
+
+    renderSaved(); renderViewings();
+  </script>
+</body>
+</html>

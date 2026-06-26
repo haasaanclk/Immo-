@@ -325,7 +325,10 @@
         <a class="brand" href="index.html">DOMAINE<span class="brand-dot">®</span></a>
         <nav class="nav">${nav}</nav>
       </div>
-      <div class="lang"><span>EN</span><span class="sep">/</span><span class="muted">DE</span></div>
+      <div class="header-right">
+        <a class="saved-chip ${getSaved().length ? "has" : ""}" href="collection.html" title="Koleksiyonum">✦ <span>${getSaved().length}</span></a>
+        <div class="lang"><span>EN</span><span class="sep">/</span><span class="muted">DE</span></div>
+      </div>
       <button class="menu-toggle" id="menuToggle" type="button" aria-label="Menu"><span></span><span></span></button>
     </header>
     <nav class="mobile-nav" id="mobileNav">${NAV.map((n)=>`<a href="${n.href}">${n.label}</a>`).join("")}</nav>`;
@@ -342,6 +345,10 @@
       <div class="foot-base"><span>© 2026 DOMAINE® — Private AI Real Estate Concierge</span><span>EN / DE</span></div>
     </footer>`;
   }
+  /* ---------- private viewing requests (Invisible Buyer) ---------- */
+  function getViewings() { return readLS("domaine.viewings.v1", []); }
+  function addViewing(v) { const list = getViewings(); list.unshift(Object.assign({ at: Date.now() }, v)); writeLS("domaine.viewings.v1", list); return list; }
+
   function mountChrome(activeKey) {
     document.body.insertAdjacentHTML("afterbegin", renderHeader(activeKey));
     document.body.insertAdjacentHTML("beforeend", renderFooter());
@@ -357,6 +364,7 @@
     profileVector, embeddingOf, cosine, DIMS,
     finance, ATELIER_STYLES, atelier,
     anonId, blindMatch, firstAccess, fmtCountdown, OFF_MARKET,
+    getViewings, addViewing,
     renderHeader, renderFooter, mountChrome,
   };
 })(window);
