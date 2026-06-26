@@ -46,9 +46,9 @@
           labels += `<text x="${lx.toFixed(1)}" y="${(ly + 16).toFixed(1)}" text-anchor="${anchor}" class="radar-val">${axes[k]}</text>`;
         });
         const dataPts = keys.map((k, i) => pt(i, R * axes[k] / 100).map(n => n.toFixed(1)).join(",")).join(" ");
-        const dots = keys.map((k, i) => { const [x, y] = pt(i, R * axes[k] / 100); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="var(--forest)"/>`; }).join("");
+        const dots = keys.map((k, i) => { const [x, y] = pt(i, R * axes[k] / 100); return `<circle class="radar-dot" style="animation-delay:${0.6 + i * 0.08}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.8" fill="var(--forest)"/>`; }).join("");
         return `<svg viewBox="0 0 260 256" class="radar">${grid}${spokes}
-          <polygon class="radar-area" points="${dataPts}" fill="rgba(30,58,47,0.16)" stroke="var(--forest)" stroke-width="1.6"/>
+          <polygon class="radar-area" pathLength="1" points="${dataPts}" fill="rgba(30,58,47,0.16)" stroke="var(--forest)" stroke-width="1.6"/>
           ${dots}${labels}</svg>`;
       }
 
@@ -79,7 +79,7 @@
         <aside>
           <div class="dna">
             <div class="dna-head">
-              <div class="dna-q">${dna.quality}<small> /100</small></div>
+              <div class="dna-q"><span data-count="${dna.quality}">0</span><small> /100</small></div>
               <div class="dna-serial">PROPERTY DNA<br/>${dna.serial}</div>
             </div>
             <p class="muted" style="font-size:13px;margin-top:.4em">Multi-Dimensional Scoring — mimari, malzeme, mahremiyet, lokasyon, prestij ve yatırım eksenleri (Radar).</p>
@@ -110,8 +110,9 @@
           <div class="fin-out" id="finOut"></div>
         </div>
         <div class="projection">
-          <div class="proj-head"><span>10 yıllık değer projeksiyonu</span><span id="growth" class="muted"></span></div>
-          <div class="proj-bars" id="projBars"></div>
+          <div class="proj-head"><span>10 yıllık değer projeksiyonu (AVM)</span><span id="growth" class="muted"></span></div>
+          <svg class="proj-chart" id="projChart" viewBox="0 0 600 180" preserveAspectRatio="none"></svg>
+          <div class="proj-axis" id="projAxis"></div>
         </div>
       </section>
 
@@ -161,11 +162,20 @@
             <div><span>Aylık toplam (sahip olma)</span><b>${DOMAINE.money(f.monthlyAll)}</b></div>
             <div><span>Yıllık bakım · enerji · vergi</span><b>${DOMAINE.money(f.maintenance + f.energy + f.tax)}</b></div>
           </div>`;
-        document.getElementById("growth").textContent = "yıllık ~%" + f.growthPct;
-        const max = Math.max(...f.projection);
-        document.getElementById("projBars").innerHTML = f.projection.map((v, y) =>
-          `<div class="pbar"><span class="pbar-fill" style="height:${Math.round(v / max * 100)}%"></span><i>${y}</i></div>`).join("");
-        requestAnimationFrame(() => document.querySelectorAll(".pbar-fill").forEach(b => b.style.transform = "scaleY(1)"));
+        document.getElementById("growth").textContent = "yıllık ~%" + f.growthPct + " · " + DOMAINE.money(f.projection[10]);
+        // animated area chart
+        const proj = f.projection, max = Math.max(...proj), min = Math.min(...proj), VW = 600, VH = 180, pad = 14;
+        const X = (i) => (i / 10) * VW;
+        const Y = (v) => VH - pad - ((v - min) / (max - min || 1)) * (VH - pad * 2);
+        const linePts = proj.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" ");
+        const areaD = `M0,${VH} L` + proj.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" L") + ` L${VW},${VH} Z`;
+        document.getElementById("projChart").innerHTML = `
+          <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--forest)" stop-opacity="0.26"/><stop offset="1" stop-color="var(--forest)" stop-opacity="0"/></linearGradient></defs>
+          <path class="proj-area" d="${areaD}" fill="url(#pg)"/>
+          <polyline class="proj-line" points="${linePts}" fill="none" stroke="var(--forest)" stroke-width="2.2" pathLength="1"/>
+          <circle class="proj-end" cx="${X(10).toFixed(1)}" cy="${Y(proj[10]).toFixed(1)}" r="4" fill="var(--forest)"/>`;
+        document.getElementById("projAxis").innerHTML = `<span>bugün · ${DOMAINE.money(proj[0])}</span><span>+10 yıl · ${DOMAINE.money(proj[10])}</span>`;
       }
       [downEl, termEl, rateEl].forEach(el => el.addEventListener("input", renderFinance));
       renderFinance();

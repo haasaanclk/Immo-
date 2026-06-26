@@ -9,74 +9,115 @@
 </head>
 <body>
   <main class="wrap">
-    <section class="cq" id="cq"></section>
+    <section class="chat">
+      <div class="chat-thread" id="thread"></div>
+      <div class="chips" id="chips"></div>
+      <div id="results"></div>
+    </section>
   </main>
   <script src="store.js"></script>
   <script src="motion.js"></script>
   <script>
     DOMAINE.mountChrome("concierge");
-    const root = document.getElementById("cq");
     const Q = DOMAINE.QUESTIONS;
-    let step = 0; const answers = [];
+    const thread = document.getElementById("thread");
+    const chipsEl = document.getElementById("chips");
+    const resultsEl = document.getElementById("results");
+    const answers = [];
+    const ACKS = ["Anladım.", "Not ettim — bu çok şey anlatıyor.", "Net. Sizi okumaya başlıyorum.",
+      "Bu önemli bir detay.", "Teşekkürler, profiliniz şekilleniyor."];
 
-    function renderIntro() {
-      root.innerHTML = `
-        <p class="cq-step">DOMAINE Concierge</p>
-        <h1 class="cq-q">5.000 ilan gezmezsiniz.<br/>Yapay zekâ <em>yaşam tarzınızı</em> anlar.</h1>
-        <p class="page-sub">Birkaç soruyla yaşam profilinizi çıkarır, portföyü sizin için sıralarız — her öneride bir <em>“neden”</em> ile. Filtre değil; bir karakter.</p>
-        <button class="btn" id="startBtn" style="margin-top:2em">Görüşmeye başla <i>→</i></button>`;
-      document.getElementById("startBtn").onclick = () => { step = 0; renderQuestion(); };
+    const scrollDown = () => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    const wait = (ms) => new Promise(r => setTimeout(r, ms));
+
+    function bubble(role) {
+      const m = document.createElement("div"); m.className = "msg " + role;
+      m.innerHTML = `<div class="msg-av">${role === "user" ? "S" : "D"}</div><div class="bubble"></div>`;
+      thread.appendChild(m); scrollDown();
+      return m.querySelector(".bubble");
     }
+    async function botSay(text) {
+      // typing indicator
+      const b = bubble("bot"); b.innerHTML = `<span class="typing"><span></span><span></span><span></span></span>`;
+      await wait(Math.min(900, 420 + text.length * 6));
+      // stream text
+      b.classList.add("is-typing-text"); b.textContent = "";
+      for (let i = 0; i < text.length; i++) { b.textContent += text[i]; if (i % 2 === 0) scrollDown(); await wait(text[i] === "." ? 34 : 14); }
+      b.classList.remove("is-typing-text"); scrollDown();
+    }
+    function userSay(text) { const b = bubble("user"); b.textContent = text; scrollDown(); }
 
-    function renderQuestion() {
-      const q = Q[step];
-      root.innerHTML = `
-        <div class="cq-progress"><span style="width:${(step/Q.length)*100}%"></span></div>
-        <p class="cq-step">Soru ${step+1} / ${Q.length}</p>
-        <h1 class="cq-q">${q.q}</h1>
-        <div class="cq-opts">${q.opts.map((o,i)=>`<button class="cq-opt" data-i="${i}">${o.label}<i>→</i></button>`).join("")}</div>`;
-      root.querySelectorAll(".cq-opt").forEach(b => b.onclick = () => {
-        answers[step] = +b.dataset.i;
-        if (step < Q.length - 1) { step++; renderQuestion(); } else renderResult();
+    function showChips(step) {
+      chipsEl.innerHTML = "";
+      Q[step].opts.forEach((o, i) => {
+        const btn = document.createElement("button"); btn.className = "chip-opt"; btn.textContent = o.label;
+        btn.style.animationDelay = (i * 70) + "ms";
+        btn.onclick = () => choose(step, i);
+        chipsEl.appendChild(btn);
       });
+      scrollDown();
     }
 
-    function renderResult() {
+    async function ask(step) {
+      await botSay(Q[step].q);
+      showChips(step);
+    }
+    async function choose(step, i) {
+      chipsEl.innerHTML = "";
+      userSay(Q[step].opts[i].label);
+      answers[step] = i;
+      const next = step + 1;
+      if (next < Q.length) { await botSay(ACKS[step % ACKS.length]); ask(next); }
+      else { await botSay("Teşekkürler. Yaşam tarzınızı 6 boyutlu bir vektöre dönüştürüp portföyü sizin için sıralıyorum…"); analyze(); }
+    }
+
+    async function analyze() {
+      const b = bubble("bot");
+      b.innerHTML = `<div class="analyzing"><span class="spin"></span> Lifestyle vector hesaplanıyor · cosine similarity</div>`;
+      await wait(1900);
+      renderResults();
+    }
+
+    function renderResults() {
       const profile = DOMAINE.buildProfile(answers);
       DOMAINE.saveProfile(profile);
       const matches = DOMAINE.matchEstates(profile, 6);
       const axes = Object.keys(DOMAINE.AXIS_LABELS).map(k =>
         `<div class="axis"><div class="axis-top"><span>${DOMAINE.AXIS_LABELS[k]}</span><span>${profile[k]}</span></div>
          <div class="axis-bar"><span class="axis-fill" data-v="${profile[k]}"></span></div></div>`).join("");
-      root.innerHTML = `
-        <div class="cq-progress"><span style="width:100%"></span></div>
-        <p class="cq-step">Lifestyle Vector — cosine similarity</p>
-        <h1 class="cq-q">Sizin için <em>seçildi.</em></h1>
-        <p class="page-sub">Yaşam tarzınız 6 boyutlu bir <em>vektör embedding</em>'e dönüştürüldü; portföy bu vektöre kosinüs benzerliğiyle sıralandı (Pinecone tarzı bir ANN sorgusunun statik karşılığı).</p>
-        <div class="cq-result-axes">${axes}</div>
-        <div class="grid" style="padding-top:0">
-          ${matches.map(m => {
-            const e = m.estate;
-            return `<article class="card" onclick="location.href='estate.html?id=${e.id}'">
-              <div class="card-media"><img src="${e.image}" onerror="this.src='public/image-1.png'"/>
-                <span class="card-tag">%${m.match} uyum</span></div>
-              <div class="card-body"><div>
-                <div class="card-cat">${e.category} · ${e.city}</div>
-                <div class="card-title">${e.title}</div>
-                <div class="card-meta">${m.reason}</div>
-              </div><div class="card-price">${DOMAINE.money(e.price)}</div></div>
-            </article>`;
-          }).join("")}
-        </div>
-        <div style="margin-top:1em; display:flex; gap:.8em; flex-wrap:wrap">
-          <a class="btn btn--ghost" href="estates.html">Tüm portföyü gör</a>
-          <button class="btn btn--ghost" id="again">Görüşmeyi tekrarla</button>
+      resultsEl.innerHTML = `
+        <div class="cq-results">
+          <p class="cq-step">Lifestyle Vector — cosine similarity</p>
+          <h2 class="cq-q">Sizin için <em>seçildi.</em></h2>
+          <div class="cq-result-axes">${axes}</div>
+          <div class="results-grid" style="margin-top:1.5em">
+            ${matches.map(m => { const e = m.estate; return `
+              <article class="card" onclick="location.href='estate.html?id=${e.id}'">
+                <div class="card-media"><img src="${e.image}" onerror="this.src='public/image-1.png'"/>
+                  <span class="card-tag">%${m.match} uyum</span></div>
+                <div class="card-body"><div>
+                  <div class="card-cat">${e.category} · ${e.city}</div>
+                  <div class="card-title">${e.title}</div>
+                  <div class="card-meta">${m.reason}</div>
+                </div><div class="card-price">${DOMAINE.money(e.price)}</div></div>
+              </article>`; }).join("")}
+          </div>
+          <div style="margin-top:1.6em; display:flex; gap:.8em; flex-wrap:wrap">
+            <a class="btn" href="estates.html">Tüm portföyü gör <i>→</i></a>
+            <button class="btn btn--ghost" id="again">Görüşmeyi tekrarla</button>
+          </div>
         </div>`;
-      requestAnimationFrame(() => root.querySelectorAll(".axis-fill").forEach(f => f.style.right = (100 - f.dataset.v) + "%"));
-      document.getElementById("again").onclick = () => { answers.length = 0; step = 0; renderIntro(); };
+      requestAnimationFrame(() => resultsEl.querySelectorAll(".axis-fill").forEach(f => f.style.right = (100 - f.dataset.v) + "%"));
+      document.getElementById("again").onclick = () => location.reload();
+      scrollDown();
     }
 
-    renderIntro();
+    // boot the conversation
+    (async () => {
+      await botSay("İyi akşamlar. Ben DOMAINE concierge.");
+      await botSay("Aradığınız şey bir ev değil — bir yaşam biçimi. Birkaç soruyla onu anlayıp, 5.000 ilan yerine yalnızca size ait olanı getireceğim.");
+      ask(0);
+    })();
   </script>
 </body>
 </html>
