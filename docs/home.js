@@ -8,6 +8,7 @@
   "use strict";
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const D = window.DOMAINE;
+  let sv = 0;                                   // shared scroll velocity (drives marquee skew)
 
   /* ---------- loader (count 0→100) ---------- */
   function runLoader() {
@@ -35,8 +36,10 @@
     const media = hero ? hero.querySelector(".hero-media") : null;
     const inner = hero ? hero.querySelector(".hero-inner") : null;
     const doc = document.documentElement;
+    let prevY = window.scrollY || 0;
     function onScroll() {
       const y = window.scrollY || window.pageYOffset;
+      sv = y - prevY; prevY = y;
       const h = (doc.scrollHeight - innerHeight) || 1;
       if (progress) progress.style.height = (y / h * 100) + "%";
       document.body.classList.toggle("scrolled", y > innerHeight * 0.62);
@@ -102,7 +105,9 @@
         else if (!dragging && vel) { x += vel; vel *= 0.9; if (Math.abs(vel) < 0.1) vel = 0; }
         const H = half();
         if (x <= -H) x += H; if (x > 0) x -= H;
-        track.style.transform = "translateX(" + x + "px)";
+        sv *= 0.86;                                   // decay the scroll velocity
+        const skew = Math.max(-5, Math.min(5, sv * 0.22));
+        track.style.transform = "translateX(" + x + "px) skewX(" + skew.toFixed(2) + "deg)";
       }
       requestAnimationFrame(loop);
     }

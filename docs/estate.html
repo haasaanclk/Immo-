@@ -204,8 +204,15 @@
         renderAtelier(b.dataset.key);
       });
       renderAtelier(DOMAINE.ATELIER_STYLES[0].key);
+      const heroEl = document.getElementById("hero");
+      heroEl.style.transition = "opacity .5s ease, transform 1.2s cubic-bezier(.2,.7,.2,1)";
       main.querySelectorAll(".thumb").forEach(t => t.onclick = () => {
-        document.getElementById("hero").src = imgs[t.dataset.i];
+        const src = imgs[t.dataset.i];
+        heroEl.style.opacity = "0"; heroEl.style.transform = "scale(1.04)";
+        const im = new Image();
+        im.onload = () => { heroEl.src = src; heroEl.style.opacity = "1"; heroEl.style.transform = "scale(1)"; };
+        im.onerror = () => { heroEl.src = src; heroEl.style.opacity = "1"; heroEl.style.transform = "scale(1)"; };
+        im.src = src;
         main.querySelectorAll(".thumb").forEach(x => x.classList.remove("on")); t.classList.add("on");
       });
       document.getElementById("saveBtn").onclick = (ev) => {
