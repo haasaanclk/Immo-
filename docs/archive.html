@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOMAINE — The Archive</title>
+    <script>try{var t=JSON.parse(localStorage.getItem("domaine.theme.v1"));document.documentElement.setAttribute("data-theme",t==="nocturne"?"nocturne":"day")}catch(e){document.documentElement.setAttribute("data-theme","day")}</script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="loading-screen" id="loadingScreen" role="status" aria-label="Loading archive">
+      <div class="loading-inner">
+        <div class="loading-brand">DOMAINE<span>®</span></div>
+        <div class="loading-text">Initialising Archive</div>
+        <div class="loading-bar"><span></span></div>
+      </div>
+    </div>
+
+    <header class="site-header">
+      <div class="header-left">
+        <a class="brand" href="index.html">DOMAINE<span class="brand-dot">®</span></a>
+        <nav class="nav">
+          <a href="archive.html" class="is-active">Archive</a>
+          <a href="estates.html">Estates</a>
+          <a href="atlas.html">Atlas</a>
+          <a href="concierge.html">Concierge</a>
+          <a href="private.html">Private</a>
+          <a href="publish.html">Publish</a>
+        </nav>
+      </div>
+      <div class="header-right">
+        <button class="hbtn search-trigger" id="searchTrigger" type="button" aria-label="Search">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.2-4.2"/></svg>
+          <span class="hbtn-t">Search</span><kbd>⌘K</kbd>
+        </button>
+        <a class="hbtn collection-pill" href="dashboard.html" aria-label="Your collection"><span class="cp-star">✦</span><span class="cp-n" id="collectionCount">0</span></a>
+        <button class="hbtn theme-toggle" id="themeToggle" type="button" aria-label="Toggle Nocturne"><span class="tt-icon tt-day">☼</span><span class="tt-icon tt-night">☾</span></button>
+        <div class="lang"><span>EN</span><span class="sep">/</span><span class="muted">DE</span></div>
+      </div>
+      <button class="menu-toggle" type="button" aria-label="Menu"><span></span><span></span></button>
+    </header>
+
+    <a class="corner corner--left" href="estates.html">Browse Estates <i>+</i></a>
+    <a class="corner corner--right" href="concierge.html">Find my home <i>+</i></a>
+
+    <div class="scene">
+      <div class="atmosphere" aria-hidden="true"></div>
+      <div class="gallery" id="gallery"></div>
+      <div class="scene-fx" aria-hidden="true"></div>
+      <div class="center" id="center">
+        <div class="center-default" id="centerDefault">
+          <p class="center-eyebrow">Selected Estates · 2014 — 2026 · Live Archive</p>
+          <h1 class="center-title">We are <em>DOMAINE.</em></h1>
+          <p class="center-sub">A private, AI-driven real-estate intelligence — built for the few.</p>
+        </div>
+        <div class="center-project" id="centerProject">
+          <div class="preview-img" id="previewImg"><img src="public/image-1.png" alt="" /></div>
+          <p class="preview-cat" id="previewCat">Villa</p>
+          <h2 class="preview-title" id="previewTitle">Untitled</h2>
+        </div>
+      </div>
+      <div class="labels" id="labels"></div>
+    </div>
+
+    <div class="hud" aria-hidden="true">
+      <span class="hdot"></span>SYSTEM ONLINE
+      <span class="sep">·</span><span>ARCHIVE <b id="hudCount">136</b></span>
+      <span class="sep">·</span><span>SCROLL TO ORBIT</span>
+    </div>
+
+    <div class="mobile-preview" id="mobilePreview">
+      <p class="mp-cat" id="mpCat">Villa</p>
+      <h1 class="mp-title" id="mpTitle">Villa Helvetia</h1>
+      <div class="mp-img" id="mpImg"><img src="public/image-1.png" alt="" /></div>
+      <a class="mp-view" href="estates.html">View estate <i>+</i></a>
+    </div>
+
+    <div class="mobile-ring-hitbox" id="ringHitbox"></div>
+    <div class="custom-cursor" id="cursor"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="store.js"></script>
+    <script>
+      /* wire the shared digital chrome onto the immersive ring page */
+      DOMAINE.initOverlays();
+      DOMAINE.refreshCollectionCount();
+      (function(){
+        var menu = document.querySelector(".menu-toggle");
+        if (menu) menu.addEventListener("click", function(){ document.getElementById("searchTrigger").click(); });
+        var hud = document.getElementById("hudCount");
+        if (hud) hud.textContent = DOMAINE.getEstates().length;
+      })();
+    </script>
+    <script src="script.js"></script>
+  </body>
+</html>

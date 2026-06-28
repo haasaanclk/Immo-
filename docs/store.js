@@ -368,7 +368,7 @@
 
   /* ---------- shared chrome ---------- */
   const NAV = [
-    { href: "index.html", label: "Archive", key: "archive" },
+    { href: "archive.html", label: "Archive", key: "archive" },
     { href: "estates.html", label: "Estates", key: "estates" },
     { href: "atlas.html", label: "Atlas", key: "atlas" },
     { href: "concierge.html", label: "Concierge", key: "concierge" },
