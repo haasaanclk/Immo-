@@ -212,6 +212,8 @@
         const on = DOMAINE.toggleSaved(e.id);
         ev.target.textContent = on ? "✦ Koleksiyonda" : "✧ Koleksiyona ekle";
         DOMAINE.refreshCollectionCount();
+        const chip = document.querySelector(".saved-chip");
+        if (chip) { const n = DOMAINE.getSaved().length; chip.querySelector("span").textContent = n; chip.classList.toggle("has", n > 0); }
         toast(on ? "Koleksiyonunuza eklendi" : "Koleksiyondan çıkarıldı");
       };
       document.getElementById("cmpBtn").onclick = (ev) => {
@@ -220,7 +222,37 @@
         ev.target.textContent = r.on ? "✓ Karşılaştırmada" : "+ Karşılaştır";
         if (r.on) toast("Karşılaştırmaya eklendi — Compare sayfasında görün.");
       };
-      document.getElementById("viewBtn").onclick = () => toast("Özel gösterim talebiniz concierge ekibine iletildi.");
+
+      /* ---- Private viewing request (Invisible Buyer) ---- */
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+      overlay.innerHTML = `
+        <div class="sheet">
+          <button class="sheet-close" aria-label="Kapat">×</button>
+          <p class="eyebrow">Özel Gösterim · Invisible Buyer</p>
+          <h3>${e.title}</h3>
+          <div class="field"><label>Tercih edilen tarih</label><input type="date" id="vDate"/></div>
+          <div class="field"><label>Zaman aralığı</label>
+            <select id="vBand"><option>Sabah (09–12)</option><option>Öğleden sonra (12–17)</option><option>Akşam (17–20)</option><option>Esnek</option></select></div>
+          <div class="field"><label>Not (opsiyonel)</label><textarea id="vNote" placeholder="Concierge'e iletmek istedikleriniz…"></textarea></div>
+          <div class="mask-note">⛨ Kimliğiniz gizli kalır. Satıcıya yalnızca <b>${bm.token}</b> · doğrulanmış band <b>${bm.band}</b> iletilir.</div>
+          <div class="sheet-actions">
+            <button class="btn" id="vSend">Talebi gönder <i>→</i></button>
+            <button class="btn btn--ghost" id="vCancel">Vazgeç</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const closeV = () => overlay.classList.remove("open");
+      document.getElementById("viewBtn").onclick = () => overlay.classList.add("open");
+      overlay.querySelector(".sheet-close").onclick = closeV;
+      overlay.querySelector("#vCancel").onclick = closeV;
+      overlay.onclick = (ev) => { if (ev.target === overlay) closeV(); };
+      overlay.querySelector("#vSend").onclick = () => {
+        DOMAINE.addViewing({ id: e.id, title: e.title, date: document.getElementById("vDate").value,
+          band: bm.band, token: bm.token, slot: document.getElementById("vBand").value, note: document.getElementById("vNote").value });
+        closeV();
+        toast("Özel gösterim talebiniz iletildi — kimliğiniz maskelendi.");
+      };
     }
   </script>
 </body>

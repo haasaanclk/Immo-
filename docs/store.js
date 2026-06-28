@@ -488,6 +488,10 @@
     const el = document.getElementById("collectionCount"); if (el) el.textContent = getSaved().length;
   }
 
+  /* ---------- private viewing requests (Invisible Buyer) ---------- */
+  function getViewings() { return readLS("domaine.viewings.v1", []); }
+  function addViewing(v) { const list = getViewings(); list.unshift(Object.assign({ at: Date.now() }, v)); writeLS("domaine.viewings.v1", list); return list; }
+
   function mountChrome(activeKey) {
     applyTheme(getTheme());
     document.body.insertAdjacentHTML("afterbegin", renderHeader(activeKey));
@@ -515,6 +519,7 @@
     getTheme, setTheme, toggleTheme, applyTheme,
     marketPulse, getCompare, inCompare, toggleCompare, clearCompare,
     searchAll, countFor, NAV,
+    getViewings, addViewing,
     renderHeader, renderFooter, renderPulseBar, renderPalette,
     initOverlays, refreshCollectionCount, mountChrome,
   };

@@ -129,6 +129,8 @@ html[data-theme="nocturne"] .scene{
 .preview-img img{ width:100%; height:100%; object-fit:cover; }
 .preview-cat{ margin-top:1.1em; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); font-family:var(--mono); }
 .preview-title{ margin-top:0.4em; font-size:clamp(20px,2vw,26px); font-weight:500; letter-spacing:-0.01em; }
+.preview-cta{ margin-top:0.9em; font-size:12px; letter-spacing:0.06em; color:var(--brass-soft,#c8a86a);
+  text-transform:uppercase; opacity:.85; }
 
 .labels{ position:absolute; inset:0; pointer-events:none; }
 .label{ position:absolute; transform:translate(-50%,-50%); white-space:nowrap; font-size:14px; font-weight:500;

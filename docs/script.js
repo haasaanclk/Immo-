@@ -159,6 +159,10 @@ function setPreview(card) {
   gsap.fromTo(previewImg, { opacity: 0.35 }, { opacity: 1, duration: 0.5 });
 }
 
+// each ring card maps to one of the 15 seed estates (seed-1..seed-15)
+function estateHref(card) { return "estate.html?id=seed-" + ((card.index % PROJECTS.length) + 1); }
+function gotoEstate(card) { if (card) location.href = estateHref(card); }
+
 const MOBILE_OPTS = { out: MOBILE_SELECTED_OUT, z: MOBILE_SELECTED_Z, scale: MOBILE_SELECTED_SCALE, duration: MOBILE_TRANSITION };
 function nearestMobileCard() {
   let idx = Math.round((MOBILE_FOCUS_ANGLE + 90 - ringRot) / INC);
@@ -173,6 +177,7 @@ function updateMobileSelection() {
 }
 function updateMobilePreview(card) {
   mpCat.textContent = card.project.category; mpTitle.textContent = card.project.title; mpImg.src = card.img;
+  const mv = document.querySelector(".mp-view"); if (mv) mv.href = estateHref(card);
   gsap.fromTo(mpImg, { opacity: 0.3 }, { opacity: 1, duration: MOBILE_TRANSITION, overwrite: true });
 }
 
@@ -185,18 +190,22 @@ function mobileTick() {
 }
 function initMobile() {
   mobileCurrentRotation = mobileTargetRotation = ringRot;
-  let lastX = 0, lastY = 0;
+  let lastX = 0, lastY = 0, downX = 0, downY = 0, moved = false;
   ringHitbox.addEventListener("pointerdown", (e) => {
     mobileDragging = true; mobileVelocity = 0; lastX = e.clientX; lastY = e.clientY;
+    downX = e.clientX; downY = e.clientY; moved = false;
     try { ringHitbox.setPointerCapture(e.pointerId); } catch (_) {}
   });
   ringHitbox.addEventListener("pointermove", (e) => {
     if (!mobileDragging) return; e.preventDefault();
     const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
+    if (Math.hypot(e.clientX - downX, e.clientY - downY) > 10) moved = true;
     const delta = dx * MOBILE_DRAG_SPEED + dy * 0.12; mobileTargetRotation += delta; mobileVelocity = delta;
   });
   const endDrag = (e) => { if (!mobileDragging) return; mobileDragging = false;
-    try { if (ringHitbox.hasPointerCapture(e.pointerId)) ringHitbox.releasePointerCapture(e.pointerId); } catch (_) {} };
+    try { if (ringHitbox.hasPointerCapture(e.pointerId)) ringHitbox.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (!moved && !introPlaying && mobileSelectedCard) gotoEstate(mobileSelectedCard);   // tap -> open focused estate
+  };
   ringHitbox.addEventListener("pointerup", endDrag);
   ringHitbox.addEventListener("pointercancel", endDrag);
   ringHitbox.addEventListener("wheel", (e) => { e.preventDefault(); mobileTargetRotation += e.deltaY * 0.18; }, { passive: false });
@@ -314,6 +323,11 @@ function init() {
     buildLabels(); initParallax(); initScroll(); initCursor(); initAmbient();
     scene.addEventListener("pointermove", onPointerMove);
     scene.addEventListener("pointerleave", () => setActive(null));
+    scene.addEventListener("click", (e) => {                               // click a card -> open that estate
+      const t = document.elementFromPoint(e.clientX, e.clientY);
+      const hit = t && t.closest(".item");
+      if (hit && hit._card) gotoEstate(hit._card);
+    });
   }
   requestAnimationFrame(onResize);
   setTimeout(onResize, 300);
