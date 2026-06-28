@@ -23,6 +23,7 @@
     ".finance", ".projection", ".atelier-chips", ".atelier-result", ".blind-col",
     ".offmarket-badge", ".cq-result-axes", ".notice", ".site-footer", ".form .field",
     ".dropzone", ".live-dna",
+    ".stat", ".panel", ".atlas-card", ".mini-row", ".cmp-card", ".cmp-row",
   ].join(",");
 
   const IMG_WRAP = ".card-media,.pcard-media,.gallery-main,.mp-img,.preview-img,.atl-palette";
@@ -87,7 +88,7 @@
       ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
       requestAnimationFrame(loop);
     })();
-    const HOVER = "a,button,.card,.pcard,.chip,.thumb,input,select,textarea,.cq-opt,.label";
+    const HOVER = "a,button,.card,.pcard,.chip,.thumb,input,select,textarea,.cq-opt,.label,.hbtn,.atlas-card,.stat,.cmdk-row";
     document.addEventListener("pointerover", (e) => { if (e.target.closest(HOVER)) document.body.classList.add("cursor-hover"); });
     document.addEventListener("pointerout", (e) => { if (e.target.closest(HOVER)) document.body.classList.remove("cursor-hover"); });
     addEventListener("pointerdown", () => ring.style.opacity = ".5");

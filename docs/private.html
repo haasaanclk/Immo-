@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DOMAINE — First Access</title>
+  <script>try{var t=JSON.parse(localStorage.getItem("domaine.theme.v1"));document.documentElement.setAttribute("data-theme",t==="nocturne"?"nocturne":"day")}catch(e){document.documentElement.setAttribute("data-theme","day")}</script>
   <link rel="stylesheet" href="app.css" />
   <link rel="stylesheet" href="motion.css" />
 </head>
@@ -20,9 +21,9 @@
     <section class="module" style="border-top:1px solid var(--line); margin-top:1em">
       <div class="module-head"><p class="eyebrow">Tiered Access</p><h2 class="module-title">Erişim <em>katmanları.</em></h2></div>
       <div class="tiers">
-        <div class="tier"><h3>Résident</h3><p class="muted">Genel portföy, concierge eşleştirme, Property DNA.</p></div>
-        <div class="tier"><h3>Privé</h3><p class="muted">Off-market First Access, Invisible Buyer, finans zekâsı, Atelier.</p></div>
-        <div class="tier"><h3>Cercle Noir</h3><p class="muted">Davet ile. Tokenized priority, 48s erken erişim, özel concierge.</p></div>
+        <div class="tier"><span class="tier-badge">Tier 01</span><h3>Résident</h3><p class="muted">Genel portföy, concierge eşleştirme, Property DNA, Atlas.</p></div>
+        <div class="tier"><span class="tier-badge">Tier 02</span><h3>Privé</h3><p class="muted">Off-market First Access, Invisible Buyer, finans zekâsı, Atelier, Compare.</p></div>
+        <div class="tier"><span class="tier-badge">Invite only</span><h3>Cercle Noir</h3><p class="muted">Davet ile. Tokenized priority, 48s erken erişim, özel concierge.</p></div>
       </div>
     </section>
   </main>

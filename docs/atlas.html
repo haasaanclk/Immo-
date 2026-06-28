@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Atlas</title>
+  <script>try{var t=JSON.parse(localStorage.getItem("domaine.theme.v1"));document.documentElement.setAttribute("data-theme",t==="nocturne"?"nocturne":"day")}catch(e){document.documentElement.setAttribute("data-theme","day")}</script>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="motion.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="page-head">
+      <p class="eyebrow">Market Geography — Live Atlas</p>
+      <h1 class="page-title">The <em>Atlas.</em></h1>
+      <p class="page-sub">Portföyü coğrafyaya göre okuyun. Her pazar için canlı arz, ortalama <strong>€/m²</strong> ve <strong>DNA kalite</strong> endeksi. Bir şehir seçin; portföy oraya odaklanır.</p>
+    </section>
+
+    <div class="atlas-grid" id="atlasGrid"></div>
+
+    <div class="archive-bar" style="margin-top:1em">
+      <span id="resultCount" class="muted"></span>
+      <button class="btn--text" id="clearCity" style="display:none">Tümünü göster ✕</button>
+    </div>
+    <div id="results" class="results-grid" style="padding-bottom:5em"></div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script src="motion.js"></script>
+  <script>
+    DOMAINE.mountChrome("atlas");
+    const D = DOMAINE;
+    const all = D.getEstates();
+    function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600); }
+
+    // approximate coordinates, for the digital "telemetry" feel
+    const COORD = { "München":"48.14°N · 11.58°E", "Zürich":"47.37°N · 8.54°E", "Wien":"48.21°N · 16.37°E",
+      "Dubai":"25.20°N · 55.27°E", "London":"51.51°N · 0.13°W", "Genève":"46.20°N · 6.14°E",
+      "Sankt Moritz":"46.50°N · 9.84°E", "Monaco":"43.74°N · 7.42°E" };
+
+    const byCity = {};
+    all.forEach(e => { (byCity[e.city] = byCity[e.city] || []).push(e); });
+    const cities = Object.keys(byCity).sort((a,b)=> byCity[b].length - byCity[a].length);
+    const maxN = Math.max(...cities.map(c => byCity[c].length));
+
+    let active = null;
+    const gridEl = document.getElementById("atlasGrid");
+    const resultsEl = document.getElementById("results");
+    const countEl = document.getElementById("resultCount");
+    const clearBtn = document.getElementById("clearCity");
+
+    gridEl.innerHTML = cities.map(c => {
+      const list = byCity[c];
+      const avg = Math.round(list.reduce((s,e)=>s+e.price,0)/list.length);
+      const dna = Math.round(list.reduce((s,e)=>s+D.computeDNA(e).quality,0)/list.length);
+      return `<article class="atlas-card" data-city="${c}">
+        <div class="ac-glow"></div>
+        <div>
+          <div class="ac-city">${c}</div>
+          <div class="ac-coord">${COORD[c] || "—"}</div>
+        </div>
+        <div>
+          <div class="ac-n">${String(list.length).padStart(2,'0')}<small> estates</small></div>
+          <div class="ac-bar"><span style="width:${Math.round(list.length/maxN*100)}%"></span></div>
+          <div class="ac-coord" style="margin-top:.7em">ø ${D.money(avg)} · DNA ${dna}</div>
+        </div>
+      </article>`;
+    }).join("");
+
+    function cardHTML(e){
+      const dna = D.computeDNA(e); const fav = D.isSaved(e.id);
+      return `<article class="card" data-id="${e.id}">
+        <div class="card-media">
+          <img src="${e.image}" alt="${e.title}" loading="lazy" onerror="this.src='public/image-1.png'"/>
+          <span class="card-tag">${e.category}</span>
+          <button class="card-fav ${fav?'on':''}" data-fav="${e.id}" title="Koleksiyona ekle">${fav?'✦':'✧'}</button>
+        </div>
+        <div class="card-body"><div>
+          <div class="card-cat">${e.city} · DNA ${dna.quality}</div>
+          <div class="card-title">${e.title}</div>
+          <div class="card-meta">${e.beds} yatak · ${D.area(e.m2)} · ${e.floors} kat</div>
+        </div><div class="card-price">${D.money(e.price)}</div></div>
+      </article>`;
+    }
+
+    function render(){
+      const list = active ? byCity[active] : all;
+      countEl.textContent = active ? `${active} · ${list.length} mülk` : `Tüm pazarlar · ${list.length} mülk`;
+      clearBtn.style.display = active ? "inline-block" : "none";
+      resultsEl.style.opacity = 0;
+      setTimeout(() => {
+        resultsEl.innerHTML = list.map(cardHTML).join("");
+        resultsEl.querySelectorAll(".card").forEach(c => c.onclick = (ev)=>{ if(ev.target.closest("[data-fav]")) return; location.href="estate.html?id="+c.dataset.id; });
+        resultsEl.querySelectorAll("[data-fav]").forEach(b => b.onclick=(ev)=>{ ev.stopPropagation();
+          const on=D.toggleSaved(b.dataset.fav); b.classList.toggle("on",on); b.textContent=on?"✦":"✧"; D.refreshCollectionCount();
+          toast(on?"Koleksiyonunuza eklendi":"Koleksiyondan çıkarıldı"); });
+        resultsEl.style.opacity = 1;
+      }, 180);
+    }
+    gridEl.querySelectorAll(".atlas-card").forEach(c => c.onclick = () => {
+      active = (active === c.dataset.city) ? null : c.dataset.city;
+      gridEl.querySelectorAll(".atlas-card").forEach(x => x.style.borderColor = x.dataset.city===active ? "var(--brass)" : "");
+      render();
+    });
+    clearBtn.onclick = () => { active = null; gridEl.querySelectorAll(".atlas-card").forEach(x=>x.style.borderColor=""); render(); };
+    render();
+  </script>
+</body>
+</html>

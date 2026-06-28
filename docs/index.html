@@ -1,71 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DOMAINE — Estate Archive</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="loading-screen" id="loadingScreen" role="status" aria-label="Loading archive">
-      <div class="loading-inner">
-        <div class="loading-brand">DOMAINE<span>®</span></div>
-        <div class="loading-text">Loading Archive</div>
-        <div class="loading-bar"><span></span></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAINE — Private AI Real-Estate Concierge</title>
+  <meta name="description" content="An invitation-only AI real-estate concierge. We don't list homes — we choose them for a life." />
+  <script>try{var t=JSON.parse(localStorage.getItem("domaine.theme.v1"));document.documentElement.setAttribute("data-theme",t==="nocturne"?"nocturne":"day")}catch(e){document.documentElement.setAttribute("data-theme","day")}</script>
+  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="motion.css" />
+</head>
+<body class="home">
+
+  <div class="loader" id="loader">
+    <div class="loader-brand">DOMAINE<span>®</span></div>
+    <div class="loader-count"><span id="loaderNum">0</span><i>%</i></div>
+    <div class="loader-tag">Composing your archive</div>
+    <div class="loader-line"><span id="loaderBar"></span></div>
+  </div>
+
+  <div class="progress"><span></span></div>
+  <div class="side-est">Est. MMXIV — Private</div>
+
+  <!-- ========================= HERO ========================= -->
+  <header class="hero" id="hero">
+    <div class="hero-media"><img src="public/image-5.png" alt="Selected estate" onerror="this.src='public/image-1.png'"/></div>
+    <div class="hero-veil"></div>
+    <div class="hero-grain" aria-hidden="true"></div>
+    <div class="wrap hero-inner">
+      <p class="hero-eyebrow">Private AI Real-Estate Concierge — Est. MMXIV</p>
+      <h1 class="hero-title">We don't list homes.<br><em>We choose them</em> for a life.</h1>
+      <p class="hero-sub">An invitation-only intelligence for those whose time is the rarest asset. We study how you live — then reveal the one address that already belongs to it.</p>
+      <div class="hero-cta">
+        <a class="btn btn--brass" href="concierge.html">Begin with the Concierge <i>→</i></a>
+        <a class="btn btn--glass" href="archive.html">Enter the Archive</a>
       </div>
     </div>
+    <div class="wrap hero-foot">
+      <span class="scrollcue">Scroll</span>
+      <span class="hero-stat" id="heroStat">— selected estates · 8 markets</span>
+    </div>
+  </header>
 
-    <header class="site-header">
-      <div class="header-left">
-        <div class="brand">DOMAINE<span class="brand-dot">®</span></div>
-        <nav class="nav">
-          <a href="#" class="is-active">Archive</a>
-          <a href="estates.html">Estates</a>
-          <a href="concierge.html">Concierge</a>
-          <a href="publish.html">Publish</a>
-        </nav>
+  <!-- ========================= ARCHIVE STRIP ========================= -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-label r"><span>01 / 05</span><span>The Living Archive</span><span class="ln"></span></div>
+      <div class="strip-head">
+        <h2 class="r">Selected <em>estates.</em> 2014 — 2026.</h2>
+        <a class="strip-link r" href="estates.html">Browse the portfolio →</a>
       </div>
-      <div class="lang">
-        <span>EN</span><span class="sep">/</span><span class="muted">DE</span>
-      </div>
-      <button class="menu-toggle" type="button" aria-label="Menu"><span></span><span></span></button>
-    </header>
+    </div>
+    <div class="strip" id="strip"><div class="strip-track" id="stripTrack"></div></div>
+  </section>
 
-    <a class="corner corner--left" href="estates.html">Browse Estates <i>+</i></a>
-    <a class="corner corner--right" href="concierge.html">Find my home <i>+</i></a>
-
-    <div class="scene">
-      <div class="atmosphere" aria-hidden="true"></div>
-      <div class="gallery" id="gallery"></div>
-      <div class="scene-fx" aria-hidden="true"></div>
-      <div class="center" id="center">
-        <div class="center-default" id="centerDefault">
-          <p class="center-eyebrow">Selected Estates — 2014 / 2026</p>
-          <h1 class="center-title">We are <em>DOMAINE.</em></h1>
-          <p class="center-sub">A private AI real-estate concierge for the few.</p>
+  <!-- ========================= MANIFESTO ========================= -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-label r"><span>02 / 05</span><span>Philosophy</span><span class="ln"></span></div>
+      <div class="manifesto">
+        <h2 class="manifesto-q r">New money shouts.<br><em>Old money</em> whispers.</h2>
+        <div class="manifesto-body">
+          <p class="r">DOMAINE is not a marketplace. It is a private decision system for a handful of people whose homes are chosen — never browsed.</p>
+          <p class="r">We trade the noise of five thousand listings for a single, verified answer: composed in silence, delivered with discretion.</p>
+          <div class="creed">
+            <div class="creed-row r"><b>01</b><span class="ct">Discretion — your identity never crosses the table. <i>Invisible Buyer.</i></span></div>
+            <div class="creed-row r"><b>02</b><span class="ct">Intelligence — every estate carries a verified <i>Property DNA.</i></span></div>
+            <div class="creed-row r"><b>03</b><span class="ct">Time — we answer with one address, <i>not a search.</i></span></div>
+            <div class="creed-row r"><b>04</b><span class="ct">Access — off-market, first, within a <i>48-hour</i> window.</span></div>
+          </div>
         </div>
-        <div class="center-project" id="centerProject">
-          <div class="preview-img" id="previewImg"><img src="public/image-1.png" alt="" /></div>
-          <p class="preview-cat" id="previewCat">Villa</p>
-          <h2 class="preview-title" id="previewTitle">Untitled</h2>
-          <p class="preview-cta">İlanı görüntüle →</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= CAPABILITIES ========================= -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-label r"><span>03 / 05</span><span>The Intelligence</span><span class="ln"></span></div>
+      <div class="caps">
+        <a class="cap r" href="concierge.html">
+          <div class="cap-no">01</div>
+          <div class="cap-main"><div class="cap-t disp">The Concierge</div><div class="cap-d">A quiet interview becomes your six-dimensional lifestyle vector — then ranks the portfolio by cosine similarity, only for you.</div></div>
+          <div class="cap-go">→</div>
+        </a>
+        <a class="cap r" href="estates.html">
+          <div class="cap-no">02</div>
+          <div class="cap-main"><div class="cap-t disp">Property DNA</div><div class="cap-d">Multi-dimensional verified scoring — architecture, materials, privacy, location, prestige, investment — on every address.</div></div>
+          <div class="cap-go">→</div>
+        </a>
+        <a class="cap r" href="private.html">
+          <div class="cap-no">03</div>
+          <div class="cap-main"><div class="cap-t disp">Invisible Buyer</div><div class="cap-d">Zero-knowledge blind matching: only a verified qualification band ever leaves your side. Identities never meet.</div></div>
+          <div class="cap-go">→</div>
+        </a>
+        <a class="cap r" href="private.html">
+          <div class="cap-no">04</div>
+          <div class="cap-main"><div class="cap-t disp">First Access</div><div class="cap-d">Off-market estates open to invited tiers on a rolling 48-hour private preview — before they ever surface.</div></div>
+          <div class="cap-go">→</div>
+        </a>
+        <a class="cap r" href="dashboard.html">
+          <div class="cap-no">05</div>
+          <div class="cap-main"><div class="cap-t disp">Your DOMAINE</div><div class="cap-d">One panel: your living DNA, your collection, your matches and a live market pulse — composed continuously.</div></div>
+          <div class="cap-go">→</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= NUMBERS (noir) ========================= -->
+  <section class="sec sec--noir">
+    <div class="wrap">
+      <div class="sec-label r"><span>04 / 05</span><span>By the numbers</span><span class="ln"></span></div>
+      <div class="numbers">
+        <div class="num r"><b><span data-num="2.1" data-dec="1" data-pre="€">€0</span><span class="u"> B</span></b><span>Portfolio under intelligence</span></div>
+        <div class="num r"><b><span data-num="8">0</span></b><span>Private markets</span></div>
+        <div class="num r"><b><span data-num="74">0</span><span class="u">/100</span></b><span>Avg. DNA quality</span></div>
+        <div class="num r"><b><span data-num="48">0</span><span class="u">h</span></b><span>First-access window</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= MEMBERSHIP ========================= -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-label r"><span>05 / 05</span><span>Membership</span><span class="ln"></span></div>
+      <h2 class="mtitle r">Three circles of <em>access.</em></h2>
+      <div class="mtiers">
+        <div class="mtier r">
+          <div class="mt-no">Tier 01</div>
+          <h3>Résident</h3>
+          <p>The front door to DOMAINE.</p>
+          <ul><li>Full portfolio &amp; Atlas</li><li>Concierge matching</li><li>Property DNA</li></ul>
+          <a class="mt-cta" href="estates.html">Explore the portfolio →</a>
+        </div>
+        <div class="mtier r">
+          <div class="mt-no">Tier 02</div>
+          <h3>Privé</h3>
+          <p>For those who buy off-market.</p>
+          <ul><li>Off-market First Access</li><li>Invisible Buyer</li><li>Finance intelligence &amp; Atelier</li><li>Side-by-side Compare</li></ul>
+          <a class="mt-cta" href="private.html">Request Privé →</a>
+        </div>
+        <div class="mtier mtier--noir r">
+          <div class="mt-no">By invitation</div>
+          <h3>Cercle Noir</h3>
+          <p>The innermost circle — deliberately small.</p>
+          <ul><li>Tokenised priority</li><li>48h early access</li><li>A dedicated concierge</li></ul>
+          <a class="mt-cta" href="concierge.html">Request an invitation →</a>
         </div>
       </div>
-      <div class="labels" id="labels"></div>
     </div>
+  </section>
 
-    <div class="mobile-preview" id="mobilePreview">
-      <p class="mp-cat" id="mpCat">Villa</p>
-      <h1 class="mp-title" id="mpTitle">Villa Helvetia</h1>
-      <div class="mp-img" id="mpImg"><img src="public/image-1.png" alt="" /></div>
-      <a class="mp-view" href="estates.html">View estate <i>+</i></a>
+  <!-- ========================= CLOSING (noir) ========================= -->
+  <section class="sec sec--noir closing">
+    <div class="wrap">
+      <p class="ce r">By invitation</p>
+      <h2 class="closing-title r">Request an <em>invitation.</em></h2>
+      <p class="closing-sub r">Membership is private and deliberately small. Tell us how you live; we will tell you where you belong.</p>
+      <div class="closing-cta r">
+        <a class="btn btn--brass" href="concierge.html">Begin with the Concierge <i>→</i></a>
+        <a class="btn btn--glass" href="archive.html">Browse the Archive</a>
+      </div>
+      <p class="closing-mail r"><a href="mailto:concierge@domaine.estate">concierge@domaine.estate</a></p>
     </div>
+  </section>
 
-    <div class="mobile-ring-hitbox" id="ringHitbox"></div>
-    <div class="custom-cursor" id="cursor"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="script.js"></script>
-  </body>
+  <div class="toast" id="toast"></div>
+  <script src="store.js"></script>
+  <script>DOMAINE.mountChrome("home");</script>
+  <script src="motion.js"></script>
+  <script src="home.js"></script>
+</body>
 </html>
